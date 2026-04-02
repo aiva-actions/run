@@ -1,23 +1,41 @@
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
+name: AIVA batch test run
+description:
+  Start an AIVA test batch via POST /v1/batches (see
+  https://app.aiva.works/docs/api/batches-run-batch)
+author: YSoft AIVA team
 
-# Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: heart
-  color: red
+  icon: airplay
+  color: green
 
-# Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
+  api-key:
+    description: AIVA API key (store in a repository or organization secret)
     required: true
-    default: '1000'
-
-# Define your outputs here.
-outputs:
-  time:
-    description: Your output description here
+  labels:
+    description:
+      Semicolon-separated labels used to select tests for the batch (e.g.
+      "smoke,regression")
+    required: true
+  testName:
+    description: Custom name of the test
+    required: false
+    default: ''
+  maxNumberOfAgents:
+    description: Maximum number of agents the batch can use for test execution.
+    required: true
+  globalVariableOverrides:
+    description: Override for all variables in a test Batch.
+    required: false
+    default: ''
+  variableOverridesPerTest:
+    description: Override for variables in a test specified by test ID.
+    required: false
+    default: ''
+  gatewayName:
+    description: Name of the gateway that is used by aiva-node during test.
+    required: false
+    default: ''
 
 runs:
   using: node24
