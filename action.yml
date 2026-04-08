@@ -9,7 +9,7 @@ branding:
   color: green
 
 inputs:
-  api-key:
+  apiKey:
     description: AIVA API key (store in a repository or organization secret)
     required: true
   labels:
