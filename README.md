@@ -11,9 +11,9 @@ status polling). API details are documented at
 1. **Starts a batch** — Sends your labels, agent limit, optional test name,
    variable overrides, and optional gateway name to
    `https://api.aiva.works/v1/batches`.
-2. **Polls until done** — Every 30 seconds it fetches batch status until the
+1. **Polls until done** — Every 30 seconds it fetches batch status until the
    CTRF summary reports no pending tests.
-3. **Surfaces results** — Adds a link to the batch in the AIVA UI to the job
+1. **Surfaces results** — Adds a link to the batch in the AIVA UI to the job
    summary, appends the final status payload, writes `batch-ctrf.json` to the
    workspace, and uploads it as a workflow artifact named `batch-status`
    (artifact upload is skipped when `ACTIONS_RUNTIME_TOKEN` is unset, e.g. when
