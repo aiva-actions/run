@@ -115,7 +115,7 @@ export async function run() {
   }
 
   await core.summary.write()
-  if (batchStatus?.results?.summary?.failed <= 0) {
-    core.setFailed("Test batch has failed tests.")
+  if (batchStatus?.results?.summary?.failed > 0) {
+    core.setFailed('AIVA test batch has failed tests.')
   }
 }
