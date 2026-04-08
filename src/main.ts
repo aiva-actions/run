@@ -20,7 +20,7 @@ function parseLabels(labelsInput: string) {
   return labels
 }
 
-function multilineInputToObject(multilineInput: string[]): object {
+function multilineInputToObject(multilineInput: string[]): Object {
   const joined = multilineInput.join('')
   return joined == '' ? {} : JSON.parse(joined)
 }
@@ -71,10 +71,10 @@ export async function run() {
   const batchWaitTimeout: number = 30
 
   core.setSecret(apiKey)
-  const globalVariableOverrides: object = multilineInputToObject(
+  const globalVariableOverrides: Object = multilineInputToObject(
     globalVariableOverridesMultiline
   )
-  const variableOverridesPerTest: object = multilineInputToObject(
+  const variableOverridesPerTest: Object = multilineInputToObject(
     variableOverridesPerTestMultiline
   )
 
@@ -115,4 +115,7 @@ export async function run() {
   }
 
   await core.summary.write()
+  if (batchStatus?.results?.summary?.failed <= 0) {
+    core.setFailed("Test batch has failed tests.")
+  }
 }

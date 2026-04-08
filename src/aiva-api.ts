@@ -20,8 +20,8 @@ export async function executeBatch(
   apiUrl: string,
   apiKey: string,
   labels: string[],
-  maxNumberOfAgents: object,
-  batchName: object,
+  maxNumberOfAgents: string,
+  batchName: string,
   globalVariableOverrides: object,
   variableOverridesPerTest: object,
   gatewayName: string
