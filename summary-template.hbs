@@ -1,0 +1,27 @@
+# Test Results Summary
+
+## Summary table
+
+| **Tests &#x1f4dd;** | **Passed ✅** | **Failed ❌** | **Skipped ⏭️** | **Pending ⏳** | **Other ❓** | **Duration ⏱️** |
+| --- | --- | --- | --- | --- | --- | --- |
+| {<!-- -->{ctrf.summary.tests}} | {<!-- -->{ctrf.summary.passed}} | {<!-- -->{ctrf.summary.failed}} | {<!-- -->{ctrf.summary.skipped}} | {<!-- -->{ctrf.summary.pending}} | {<!-- -->{ctrf.summary.other}} | {<!-- -->{formatDuration ctrf.summary.start ctrf.summary.stop}} |
+
+
+## Failed Tests Summary
+
+| **Name** | **Status** | **Failure Message** |
+| --- | --- | --- |
+{<!-- -->{#each ctrf.tests}}
+{<!-- -->{#if (eq status "failed")}}
+| {<!-- -->{name}} | {<!-- -->{status}} ❌ | {<!-- -->{#if message}}{<!-- -->{message}}{<!-- -->{else}}No failure message{<!-- -->{/if}} |
+{<!-- -->{/if}}
+{<!-- -->{/each}}
+
+
+## Detailed Summary
+
+| **Test Name** | **Status** | **Error Message** | **Parameters** | **Test Result Link** |
+| --- | --- | --- | --- | --- |
+{<!-- -->{#each ctrf.tests}}
+| {<!-- -->{name}} | {<!-- -->{status}} {<!-- -->{#if (eq status "passed")}}✅{<!-- -->{else if (eq status "failed")}}❌{<!-- -->{else if (eq status "skipped")}}⏭️{<!-- -->{else if (eq status "pending")}}⏳{<!-- -->{else}}❓{<!-- -->{/if}} | {<!-- -->{#if message}}{<!-- -->{message}}{<!-- -->{else}}-{<!-- -->{/if}} | {<!-- -->{#if parameters}}{<!-- -->{#each parameters}}{<!-- -->{@key}}: {<!-- -->{this}}<br/>{<!-- -->{/each}}{<!-- -->{else}}-{<!-- -->{/if}} | {<!-- -->{#if extra.testResultLink}}[View Result]({<!-- -->{extra.testResultLink}}){<!-- -->{else}}-{<!-- -->{/if}} |
+{<!-- -->{/each}}

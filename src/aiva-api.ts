@@ -55,7 +55,7 @@ export async function executeBatch(
   const responseJSON: runTestBatchResponse =
     (await res.json()) as runTestBatchResponse
   const batchId: string = responseJSON.testBatchId
-  if (batchId.length === 0) {
+  if (!batchId) {
     throw new Error('AIVA batch response missing testBatchId')
   }
   return batchId

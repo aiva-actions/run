@@ -36,16 +36,25 @@ function sleep(s: number) {
  * @param batchStatusResponse
  * @returns {Boolean} True if there are no more pending tests
  */
-function testBatchStillRunning(batchStatusResponse: CTRFReport): boolean {
+function isTestBatchRunning(batchStatusResponse: CTRFReport): boolean {
   core.debug(JSON.stringify(batchStatusResponse))
   const pending: number = batchStatusResponse?.results?.summary?.pending ?? 0
   return pending > 0
 }
 
+function isValueInRange(value: number, minValue: number, maxValue: number): boolean {
+  return value >= minValue && value <= maxValue;
+}
+
+
 /**
  * Main function of the github action.
  */
 export async function run() {
+  const minStatusWaitTime = 5
+  const maxStatusWaitTime = 1800
+  const artifact: ArtifactClient = new DefaultArtifactClient()
+  
   const apiKey: string = core.getInput('apiKey', { required: true })
   const labelsInput: string = core.getInput('labels', { required: true })
   const maxNumberOfAgents: string = core.getInput('maxNumberOfAgents', {
@@ -61,16 +70,16 @@ export async function run() {
     { required: false }
   )
   const gatewayName: string = core.getInput('gatewayName', { required: false })
+  const apiUrl: string = core.getInput('apiUrl', { required: false })
+  const aivaBatchUrl: string = core.getInput('aivaBatchUrl', { required: false })
+  const batchWaitTimeout: string = core.getInput("statusCheckWaitTime", {required: false})
+  const batchStatusFilepath: PathLike = core.getInput("CTRFReportFilepath")
+  if (!isValueInRange(parseInt(batchWaitTimeout), minStatusWaitTime, maxStatusWaitTime)) {
+    core.setFailed("Wait time is not within sane bounds of ${minWaitTime} and ${maxWaitTime} seconds.")
+  }
 
-  const artifact: ArtifactClient = new DefaultArtifactClient()
-
-  const apiUrl: string = 'https://api.aiva.works/v1/batches'
-  const aivaBatchUrl: string = 'https://app.aiva.works/scheduling/'
-  const batchStatusFilepath: PathLike = './batch-ctrf.json'
   const labels: string[] = parseLabels(labelsInput)
-  const batchWaitTimeout: number = 30
 
-  core.setSecret(apiKey)
   const globalVariableOverrides: Object = multilineInputToObject(
     globalVariableOverridesMultiline
   )
@@ -96,22 +105,21 @@ export async function run() {
   let batchStatus: CTRFReport
   do {
     core.info('Waiting for test batch to finish.')
-    await sleep(batchWaitTimeout)
+    await sleep(parseInt(batchWaitTimeout))
     batchStatus = await getBatchStatus(apiUrl, apiKey, batchId)
     core.debug(JSON.stringify(batchStatus))
-  } while (testBatchStillRunning(batchStatus))
+  } while (isTestBatchRunning(batchStatus))
 
   core.setOutput('batchId', batchId)
   await writeFile(batchStatusFilepath, JSON.stringify(batchStatus), 'utf-8')
-  // The following if is present only to enable local testing via @github/local-action. When testing locally
-  // ACTIONS_RUNTIME_TOKEN is not present and the action crashes
-  if (process.env.ACTIONS_RUNTIME_TOKEN) {
-    await artifact.uploadArtifact('batch-status', [batchStatusFilepath], '.')
-  } else {
+  // Local-action testing crashes when trying to upload artifact, so we want to skip it
+  if (process.env.SKIP_ARTIFACT_UPLOAD) {
     core.warning(
-      'Skipping artifact upload: ACTIONS_RUNTIME_TOKEN is unset (e.g. local-action). ' +
+        'Skipping artifact upload: ACTIONS_RUNTIME_TOKEN is unset (e.g. local-action). ' +
         `Batch CTRF was written to ${String(batchStatusFilepath)}.`
     )
+  } else {
+    await artifact.uploadArtifact('batch-status', [batchStatusFilepath], '.')
   }
 
   await core.summary.write()

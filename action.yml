@@ -36,6 +36,22 @@ inputs:
     description: Name of the gateway that is used by aiva-node during test.
     required: false
     default: ''
+  apiUrl:
+    description: URL for starting a test batch
+    required: false
+    default: 'https://api.aiva.works/v1/batches'
+  aivaBatchUrl:
+    description: URL for getting batch status
+    required: false
+    default: 'https://app.aiva.works/scheduling/'
+  CTRFReportFilepath:
+    description: Filepath where CTRF
+    required: false
+    default: './batch-ctrf.json'
+  statusCheckWaitTime:
+    description: Wait time between retrying API call to check if batch finished.
+    required: false
+    default: 30
 
 runs:
   using: node24
