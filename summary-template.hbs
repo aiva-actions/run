@@ -1,19 +1,12 @@
-Handlebars.registerHelper("link", function(text, url) {
-  var url = Handlebars.escapeExpression(url),
-  text = Handlebars.escapeExpression(text)
+# AIVA Test Results Summary
 
-  return new Handlebars.SafeString("<a href='" + url + "'>" + text +"</a>");
-});
-# Test Results Summary
-
-{{ctrf.summary.extra.testBatchLink}}
-[Link to Test batch run in AIVA]({{ctrf.summary.extra.testBatchLink}})
+{{#if ctrf.summary.extra.testBatchLink}}[Link to Test batch run in AIVA]({{ctrf.summary.extra.testBatchLink}}){{else}}{{/if}}
 
 ## Summary table
 
 | **Tests &#x1f4dd;** | **Passed ✅** | **Failed ❌** | **Skipped ⏭️** | **Pending ⏳** | **Other ❓** | **Duration ⏱️** |
 | --- | --- | --- | --- | --- | --- | --- |
-| {{ctrf.summary.tests}} | {{ctrf.summary.passed}} | {{ctrf.summary.failed}} | {{ctrf.summary.skipped}} | {{ctrf.summary.pending}} | {{ctrf.summary.other}} | {{formatDuration ctrf.summary.start ctrf.summary.stop}} |
+| {{ctrf.summary.tests}} | {{ctrf.summary.passed}} | {{ctrf.summary.failed}} | {{ctrf.summary.skipped}} | {{ctrf.summary.pending}} | {{ctrf.summary.other}} | {{formatDuration ctrf.summary.duration}} |
 
 
 ## Failed Tests Summary
