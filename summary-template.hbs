@@ -6,7 +6,8 @@ Handlebars.registerHelper("link", function(text, url) {
 });
 # Test Results Summary
 
-{{link "Link to Test batch run in AIVA" ctrf.summary.extra.testBatchLink}}
+{{ctrf.summary.extra.testBatchLink}}
+[Link to Test batch run in AIVA]({{ctrf.summary.extra.testBatchLink}})
 
 ## Summary table
 
@@ -20,7 +21,8 @@ Handlebars.registerHelper("link", function(text, url) {
 | **Name** | **Status** | **Failure Message** |
 | --- | --- | --- |
 {{#each ctrf.tests}}
-{{link "Link to Test run in AIVA" testBatchLink}}
+    {{testBatchLink}}
+[Link to Test run in AIVA](testBatchLink)
 {{#if (eq status "failed")}}
 | {{name}} | {{status}} ❌ | {{#if message}}{{message}}{{else}}No failure message{{/if}} |
 {{/if}}
