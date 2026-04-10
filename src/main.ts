@@ -97,10 +97,6 @@ export async function run() {
     variableOverridesPerTest,
     gatewayName
   )
-  core.summary.addLink(
-    'See the batch results in AIVA. ',
-    aivaBatchUrl + batchId
-  )
 
   let batchStatus: CTRFReport
   do {
@@ -122,7 +118,6 @@ export async function run() {
     await artifact.uploadArtifact('batch-status', [batchStatusFilepath], '.')
   }
 
-  await core.summary.write()
   if (batchStatus?.results?.summary?.failed > 0) {
     core.setFailed('AIVA test batch has failed tests.')
   }
