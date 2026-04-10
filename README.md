@@ -23,8 +23,10 @@ status polling). API details are documented at
 The action expects Node 24 (see `action.yml` and `package.json`).
 
 ### ./dist in repo
-You may be wondering why we push `dist` folder in repo, when it is usually in gitignore.
-The reason are [Github runners](https://docs.github.com/en/actions/tutorials/create-actions/create-a-javascript-action#commit-tag-and-push-your-action). 
+
+You may be wondering why we push `dist` folder in repo, when it is usually in
+gitignore. The reason are
+[Github runners](https://docs.github.com/en/actions/tutorials/create-actions/create-a-javascript-action#commit-tag-and-push-your-action).
 
 ## Usage
 
@@ -73,12 +75,12 @@ Replace `uses: ./` with your published action reference (for example
 | `maxNumberOfAgents`        | Yes      | Maximum number of agents the batch may use.                                                                                                 |
 | `testName`                 | No       | Custom batch name (default: empty).                                                                                                         |
 | `globalVariableOverrides`  | No       | JSON object applied to all tests in the batch (multiline). Empty input is treated as `{}`.                                                  |
-| `variableOverridesPerTest` | No       | JSON object mapping test IDs to variable overrides (multiline). Empty input is treated as `{}`.                                              |
+| `variableOverridesPerTest` | No       | JSON object mapping test IDs to variable overrides (multiline). Empty input is treated as `{}`.                                             |
 | `gatewayName`              | No       | Gateway name used by aiva-node during the test (default: empty).                                                                            |
-| `apiUrl`                   | No       | Batch API URL: POST to start the batch, GET `{url}/{batchId}` for status polling. Default: `https://api.aiva.works/v1/batches`.               |
-| `aivaBatchUrl`             | No       | URL for getting batch status. Default: `https://app.aiva.works/scheduling/`.                                                                 |
+| `apiUrl`                   | No       | Batch API URL: POST to start the batch, GET `{url}/{batchId}` for status polling. Default: `https://api.aiva.works/v1/batches`.             |
+| `aivaBatchUrl`             | No       | URL for getting batch status. Default: `https://app.aiva.works/scheduling/`.                                                                |
 | `statusCheckWaitTime`      | No       | Seconds to wait between status polls. Must be between 5 and 1800. Default: `30`.                                                            |
-| `CTRFReportFilepath`       | No       | Path where the final CTRF JSON is written and uploaded as the `batch-status` artifact. Default: `./batch-ctrf.json`.                          |
+| `CTRFReportFilepath`       | No       | Path where the final CTRF JSON is written and uploaded as the `batch-status` artifact. Default: `./batch-ctrf.json`.                        |
 
 ## Development
 

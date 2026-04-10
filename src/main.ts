@@ -42,10 +42,13 @@ function isTestBatchRunning(batchStatusResponse: CTRFReport): boolean {
   return pending > 0
 }
 
-function isValueInRange(value: number, minValue: number, maxValue: number): boolean {
-  return value >= minValue && value <= maxValue;
+function isValueInRange(
+  value: number,
+  minValue: number,
+  maxValue: number
+): boolean {
+  return value >= minValue && value <= maxValue
 }
-
 
 /**
  * Main function of the github action.
@@ -54,7 +57,7 @@ export async function run() {
   const minStatusWaitTime = 5
   const maxStatusWaitTime = 1800
   const artifact: ArtifactClient = new DefaultArtifactClient()
-  
+
   const apiKey: string = core.getInput('apiKey', { required: true })
   const labelsInput: string = core.getInput('labels', { required: true })
   const maxNumberOfAgents: string = core.getInput('maxNumberOfAgents', {
@@ -71,11 +74,23 @@ export async function run() {
   )
   const gatewayName: string = core.getInput('gatewayName', { required: false })
   const apiUrl: string = core.getInput('apiUrl', { required: false })
-  const aivaBatchUrl: string = core.getInput('aivaBatchUrl', { required: false })
-  const batchWaitTimeout: string = core.getInput("statusCheckWaitTime", {required: false})
-  const batchStatusFilepath: PathLike = core.getInput("CTRFReportFilepath")
-  if (!isValueInRange(parseInt(batchWaitTimeout), minStatusWaitTime, maxStatusWaitTime)) {
-    core.setFailed("Wait time is not within sane bounds of ${minWaitTime} and ${maxWaitTime} seconds.")
+  const aivaBatchUrl: string = core.getInput('aivaBatchUrl', {
+    required: false
+  })
+  const batchWaitTimeout: string = core.getInput('statusCheckWaitTime', {
+    required: false
+  })
+  const batchStatusFilepath: PathLike = core.getInput('CTRFReportFilepath')
+  if (
+    !isValueInRange(
+      parseInt(batchWaitTimeout),
+      minStatusWaitTime,
+      maxStatusWaitTime
+    )
+  ) {
+    core.setFailed(
+      'Wait time is not within sane bounds of ${minWaitTime} and ${maxWaitTime} seconds.'
+    )
   }
 
   const labels: string[] = parseLabels(labelsInput)
@@ -111,7 +126,7 @@ export async function run() {
   // Local-action testing crashes when trying to upload artifact, so we want to skip it
   if (process.env.SKIP_ARTIFACT_UPLOAD) {
     core.warning(
-        'Skipping artifact upload: ACTIONS_RUNTIME_TOKEN is unset (e.g. local-action). ' +
+      'Skipping artifact upload: ACTIONS_RUNTIME_TOKEN is unset (e.g. local-action). ' +
         `Batch CTRF was written to ${String(batchStatusFilepath)}.`
     )
   } else {
