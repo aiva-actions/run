@@ -1,3 +1,9 @@
+Handlebars.registerHelper("link", function(text, url) {
+var url = Handlebars.escapeExpression(url),
+text = Handlebars.escapeExpression(text)
+
+return new Handlebars.SafeString("<a href='" + url + "'>" + text +"</a>");
+});
 # Test Results Summary
 
 {{link "Link to Test batch run in AIVA" ctrf.summary.extra.testBatchLink}}
