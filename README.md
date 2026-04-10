@@ -22,11 +22,11 @@ status polling). API details are documented at
 
 The action expects Node 24 (see `action.yml` and `package.json`).
 
-### ./dist in repo
+### ./dist in repository
 
-You may be wondering why we push `dist` folder in repo, when it is usually in
+You may be wondering why we push `dist` folder in repository, when it is usually in
 gitignore. The reason are
-[Github runners](https://docs.github.com/en/actions/tutorials/create-actions/create-a-javascript-action#commit-tag-and-push-your-action).
+[GitHub runners](https://docs.github.com/en/actions/tutorials/create-actions/create-a-javascript-action#commit-tag-and-push-your-action).
 
 ## Usage
 
