@@ -1,5 +1,7 @@
 # Test Results Summary
 
+[Link to Test batch run in AIVA]({{ ctrf.summary.extra.testBatchLink }})
+
 ## Summary table
 
 | **Tests &#x1f4dd;** | **Passed ✅** | **Failed ❌** | **Skipped ⏭️** | **Pending ⏳** | **Other ❓** | **Duration ⏱️** |
@@ -12,6 +14,7 @@
 | **Name** | **Status** | **Failure Message** |
 | --- | --- | --- |
 {<!-- -->{#each ctrf.tests}}
+[Link to Test run in AIVA]({{ testBatchLink }})
 {<!-- -->{#if (eq status "failed")}}
 | {<!-- -->{name}} | {<!-- -->{status}} ❌ | {<!-- -->{#if message}}{<!-- -->{message}}{<!-- -->{else}}No failure message{<!-- -->{/if}} |
 {<!-- -->{/if}}

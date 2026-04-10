@@ -35,7 +35,7 @@ Store your AIVA API key in a
 ```yaml
 steps:
   - name: Run AIVA batch
-    uses: ./
+    uses: aiva-actions/run@v1
     with:
       api-key: ${{ secrets.AIVA_API_KEY }}
       labels: 'smoke;regression'
@@ -47,6 +47,14 @@ steps:
       # variableOverridesPerTest: |
       #   {"test-id": {"KEY": "value"}}
       # gatewayName: "my-gateway"
+
+  - name: Print CTRF Summary
+    id: summary
+    uses: ctrf-io/github-test-reporter@v1.0.28
+    with:
+      report-path: 'batch-ctrf.json'
+      template-path: 'summary-template.hbf'
+    if: always()
 ```
 
 Replace `uses: ./` with your published action reference (for example
