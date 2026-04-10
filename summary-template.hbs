@@ -1,30 +1,30 @@
 # Test Results Summary
 
-[Link to Test batch run in AIVA]({{ctrf.summary.extra.testBatchLink}})
+{{link "Link to Test batch run in AIVA" ctrf.summary.extra.testBatchLink}}
 
 ## Summary table
 
 | **Tests &#x1f4dd;** | **Passed ✅** | **Failed ❌** | **Skipped ⏭️** | **Pending ⏳** | **Other ❓** | **Duration ⏱️** |
 | --- | --- | --- | --- | --- | --- | --- |
-| {{ctrf.summary.tests}} | {<!-- -->{ctrf.summary.passed}} | {<!-- -->{ctrf.summary.failed}} | {<!-- -->{ctrf.summary.skipped}} | {<!-- -->{ctrf.summary.pending}} | {<!-- -->{ctrf.summary.other}} | {<!-- -->{formatDuration ctrf.summary.start ctrf.summary.stop}} |
+| {{ctrf.summary.tests}} | {{ctrf.summary.passed}} | {{ctrf.summary.failed}} | {{ctrf.summary.skipped}} | {{ctrf.summary.pending}} | {{ctrf.summary.other}} | {{formatDuration ctrf.summary.start ctrf.summary.stop}} |
 
 
 ## Failed Tests Summary
 
 | **Name** | **Status** | **Failure Message** |
 | --- | --- | --- |
-{<!-- -->{#each ctrf.tests}}
-[Link to Test run in AIVA]({{testBatchLink}})
-{<!-- -->{#if (eq status "failed")}}
-| {<!-- -->{name}} | {<!-- -->{status}} ❌ | {<!-- -->{#if message}}{<!-- -->{message}}{<!-- -->{else}}No failure message{<!-- -->{/if}} |
-{<!-- -->{/if}}
-{<!-- -->{/each}}
+{{#each ctrf.tests}}
+{{link "Link to Test run in AIVA" testBatchLink}}
+{{#if (eq status "failed")}}
+| {{name}} | {{status}} ❌ | {{#if message}}{{message}}{{else}}No failure message{{/if}} |
+{{/if}}
+{{/each}}
 
 
 ## Detailed Summary
 
 | **Test Name** | **Status** | **Error Message** | **Parameters** | **Test Result Link** |
 | --- | --- | --- | --- | --- |
-{<!-- -->{#each ctrf.tests}}
-| {<!-- -->{name}} | {<!-- -->{status}} {<!-- -->{#if (eq status "passed")}}✅{<!-- -->{else if (eq status "failed")}}❌{<!-- -->{else if (eq status "skipped")}}⏭️{<!-- -->{else if (eq status "pending")}}⏳{<!-- -->{else}}❓{<!-- -->{/if}} | {<!-- -->{#if message}}{<!-- -->{message}}{<!-- -->{else}}-{<!-- -->{/if}} | {<!-- -->{#if parameters}}{<!-- -->{#each parameters}}{<!-- -->{@key}}: {<!-- -->{this}}<br/>{<!-- -->{/each}}{<!-- -->{else}}-{<!-- -->{/if}} | {<!-- -->{#if extra.testResultLink}}[View Result]({<!-- -->{extra.testResultLink}}){<!-- -->{else}}-{<!-- -->{/if}} |
-{<!-- -->{/each}}
+{{#each ctrf.tests}}
+| {{name}} | {{status}} {{#if (eq status "passed")}}✅{{else if (eq status "failed")}}❌{{else if (eq status "skipped")}}⏭️{{else if (eq status "pending")}}⏳{{else}}❓{{/if}} | {{#if message}}{{message}}{{else}}-{{/if}} | {{#if parameters}}{{#each parameters}}{{@key}}: {{this}}<br/>{{/each}}{{else}}-{{/if}} | {{#if extra.testResultLink}}[View Result]({{extra.testResultLink}}){{else}}-{{/if}} |
+{{/each}}
