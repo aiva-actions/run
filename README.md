@@ -24,8 +24,8 @@ The action expects Node 24 (see `action.yml` and `package.json`).
 
 ### ./dist in repository
 
-You may be wondering why we push `dist` folder in repository, when it is
-usually in gitignore. The reason are
+You may be wondering why we push `dist` folder in repository, when it is usually
+in gitignore. The reason are
 [GitHub runners](https://docs.github.com/en/actions/tutorials/create-actions/create-a-javascript-action#commit-tag-and-push-your-action).
 
 ## Usage
