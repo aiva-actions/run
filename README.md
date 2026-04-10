@@ -50,7 +50,6 @@ steps:
       #   {"test-id": {"KEY": "value"}}
       # gatewayName: my-gateway
       # apiUrl: https://api.aiva.works/v1/batches
-      # aivaBatchUrl: https://app.aiva.works/scheduling/
       # statusCheckWaitTime: '30'
       # CTRFReportFilepath: ./batch-ctrf.json
 
@@ -78,7 +77,6 @@ Replace `uses: ./` with your published action reference (for example
 | `variableOverridesPerTest` | No       | JSON object mapping test IDs to variable overrides (multiline). Empty input is treated as `{}`.                                             |
 | `gatewayName`              | No       | Gateway name used by aiva-node during the test (default: empty).                                                                            |
 | `apiUrl`                   | No       | Batch API URL: POST to start the batch, GET `{url}/{batchId}` for status polling. Default: `https://api.aiva.works/v1/batches`.             |
-| `aivaBatchUrl`             | No       | URL for getting batch status. Default: `https://app.aiva.works/scheduling/`.                                                                |
 | `statusCheckWaitTime`      | No       | Seconds to wait between status polls. Must be between 5 and 1800. Default: `30`.                                                            |
 | `CTRFReportFilepath`       | No       | Path where the final CTRF JSON is written and uploaded as the `batch-status` artifact. Default: `./batch-ctrf.json`.                        |
 

@@ -74,9 +74,6 @@ export async function run() {
   )
   const gatewayName: string = core.getInput('gatewayName', { required: false })
   const apiUrl: string = core.getInput('apiUrl', { required: false })
-  const aivaBatchUrl: string = core.getInput('aivaBatchUrl', {
-    required: false
-  })
   const batchWaitTimeout: string = core.getInput('statusCheckWaitTime', {
     required: false
   })
@@ -89,7 +86,7 @@ export async function run() {
     )
   ) {
     core.setFailed(
-      'Wait time is not within sane bounds of ${minWaitTime} and ${maxWaitTime} seconds.'
+      `Wait time is not within sane bounds of ${minStatusWaitTime} and ${maxStatusWaitTime} seconds.`
     )
   }
 
