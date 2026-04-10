@@ -37,7 +37,7 @@ steps:
   - name: Run AIVA batch
     uses: aiva-actions/run@v1
     with:
-      api-key: ${{ secrets.AIVA_API_KEY }}
+      apiKey: ${{ secrets.AIVA_API_KEY }}
       labels: 'smoke;regression'
       maxNumberOfAgents: '3'
       testName: 'CI nightly'
@@ -46,13 +46,17 @@ steps:
       #   {"KEY": "value"}
       # variableOverridesPerTest: |
       #   {"test-id": {"KEY": "value"}}
-      # gatewayName: "my-gateway"
+      # gatewayName: my-gateway
+      # apiUrl: https://api.aiva.works/v1/batches
+      # aivaBatchUrl: https://app.aiva.works/scheduling/
+      # statusCheckWaitTime: '30'
+      # CTRFReportFilepath: ./batch-ctrf.json
 
   - name: Print CTRF Summary
     id: summary
-    uses: ctrf-io/github-test-reporter@v1.0.28
+    uses: ctrf-io/github-test-reporter@v1
     with:
-      report-path: 'batch-ctrf.json'
+      report-path: '${{ input.CTRFReportFilepath }}'
       template-path: 'summary-template.hbf'
     if: always()
 ```
@@ -68,9 +72,13 @@ Replace `uses: ./` with your published action reference (for example
 | `labels`                   | Yes      | Semicolon-separated labels that select which tests run (e.g. `smoke;regression`). At least one non-empty label is required after splitting. |
 | `maxNumberOfAgents`        | Yes      | Maximum number of agents the batch may use.                                                                                                 |
 | `testName`                 | No       | Custom batch name (default: empty).                                                                                                         |
-| `globalVariableOverrides`  | No       | JSON object applied to all tests in the batch (multiline).                                                                                  |
-| `variableOverridesPerTest` | No       | JSON object mapping test IDs to variable overrides (multiline).                                                                             |
-| `gatewayName`              | No       | Gateway name used by aiva-node during the test.                                                                                             |
+| `globalVariableOverrides`  | No       | JSON object applied to all tests in the batch (multiline). Empty input is treated as `{}`.                                                  |
+| `variableOverridesPerTest` | No       | JSON object mapping test IDs to variable overrides (multiline). Empty input is treated as `{}`.                                              |
+| `gatewayName`              | No       | Gateway name used by aiva-node during the test (default: empty).                                                                            |
+| `apiUrl`                   | No       | Batch API URL: POST to start the batch, GET `{url}/{batchId}` for status polling. Default: `https://api.aiva.works/v1/batches`.               |
+| `aivaBatchUrl`             | No       | URL for getting batch status. Default: `https://app.aiva.works/scheduling/`.                                                                 |
+| `statusCheckWaitTime`      | No       | Seconds to wait between status polls. Must be between 5 and 1800. Default: `30`.                                                            |
+| `CTRFReportFilepath`       | No       | Path where the final CTRF JSON is written and uploaded as the `batch-status` artifact. Default: `./batch-ctrf.json`.                          |
 
 ## Development
 
