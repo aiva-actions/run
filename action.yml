@@ -52,6 +52,10 @@ inputs:
     description: Wait time between retrying API call to check if batch finished.
     required: false
     default: 30
+  batchProgressTimeout:
+    description: How log the action should wait for a change in pending tests before giving up
+    required: false
+    default: 1800
 
 runs:
   using: node24
