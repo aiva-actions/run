@@ -36,30 +36,30 @@ Store your AIVA API key in a
 
 ```yaml
 steps:
-  - name: Run AIVA batch
-    uses: aiva-actions/run@v1
-    with:
-      apiKey: ${{ secrets.AIVA_API_KEY }}
-      labels: 'smoke;regression'
-      maxNumberOfAgents: '3'
-      testName: 'CI nightly'
-      # Optional — multiline JSON objects:
-      # globalVariableOverrides: |
-      #   {"KEY": "value"}
-      # variableOverridesPerTest: |
-      #   {"test-id": {"KEY": "value"}}
-      # gatewayName: my-gateway
-      # apiUrl: https://api.aiva.works/v1/batches
-      # statusCheckWaitTime: '30'
-      # CTRFReportFilepath: ./batch-ctrf.json
+    - name: Run AIVA batch
+      uses: aiva-actions/run@v1
+      with:
+          apiKey: ${{ secrets.AIVA_API_KEY }}
+          labels: 'smoke;regression'
+          maxNumberOfAgents: '3'
+          testName: 'CI nightly'
+          # Optional — multiline JSON objects:
+          # globalVariableOverrides: |
+          #   {"KEY": "value"}
+          # variableOverridesPerTest: |
+          #   {"test-id": {"KEY": "value"}}
+          # gatewayName: my-gateway
+          # apiUrl: https://api.aiva.works/v1/batches
+          # statusCheckWaitTime: '30'
+          # CTRFReportFilepath: ./batch-ctrf.json
 
-  - name: Print CTRF Summary
-    id: summary
-    uses: ctrf-io/github-test-reporter@v1
-    with:
-      report-path: '${{ input.CTRFReportFilepath }}'
-      template-path: 'summary-template.hbf'
-    if: always()
+    - name: Print CTRF Summary
+      id: summary
+      uses: ctrf-io/github-test-reporter@v1
+      with:
+          report-path: '${{ input.CTRFReportFilepath }}'
+          template-path: 'summary-template.hbf'
+      if: always()
 ```
 
 Replace `uses: ./` with your published action reference (for example
