@@ -39,8 +39,8 @@ export async function executeBatch(
             name: batchName,
             labels: labels,
             maxNumberOfAgents: maxNumberOfAgents,
-            globalVariableOverrides: globalVariableOverrides,
-            variableOverridesPerTest: variableOverridesPerTest,
+            globalVariablesOverrides: globalVariableOverrides,
+            variablesOverridesPerTest: variableOverridesPerTest,
             gatewayName: gatewayName,
         }),
     });

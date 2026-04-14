@@ -123,9 +123,7 @@ export async function run() {
     await writeFile(batchStatusFilepath, JSON.stringify(batchStatus), 'utf-8');
     // Local-action testing crashes when trying to upload artifact, so we want to skip it
     if (process.env.SKIP_ARTIFACT_UPLOAD) {
-        core.warning(
-            'Skipping artifact upload: ACTIONS_RUNTIME_TOKEN is unset (e.g. local-action). ' + `Batch CTRF was written to ${String(batchStatusFilepath)}.`,
-        );
+        core.warning('Skipping artifact upload: SKIP_ARTIFACT_UPLOAD is set. ' + `Batch CTRF was written to ${String(batchStatusFilepath)}.`);
     } else {
         await artifact.uploadArtifact('batch-status', [batchStatusFilepath], '.');
     }
