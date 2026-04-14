@@ -8,24 +8,19 @@ status polling). API details are documented at
 
 ## What it does
 
-1. **Starts a batch** — Sends your labels, agent limit, optional test name,
-   variable overrides, and optional gateway name to
-   `https://api.aiva.works/v1/batches`.
-1. **Polls until done** — Every 30 seconds it fetches batch status until there are no pending tests.
-   CTRF summary reports no pending tests.
-1. **Surfaces results** — Adds a link to the batch in the AIVA UI to the job
-   summary, appends the final status payload, writes `batch-ctrf.json` to the
-   workspace, and uploads it as a workflow artifact named `batch-status`
-   (artifact upload is skipped when `ACTIONS_RUNTIME_TOKEN` is unset, e.g. when
-   using [`@github/local-action`](https://github.com/github/local-action)
-   locally).
+1. **Starts a batch** —  Sends a request to the AIVA API with your chosen labels,
+   agent limit, and optional settings (test name, variable overrides, gateway name, timeouts) to start a new test batch.
+1. **Keeps monitoring the batch** — Every ten seconds fetches batch status
+   until there are no pending tests.
+1. **Prints a test summary** — Adds a link to the batch in the AIVA UI. Fills in 
+   summary results and uploads it as a workflow artifact named `batch-status`.
 
 The action expects Node 24 (see `action.yml` and `package.json`).
 
 ### ./dist in repository
 
 You may be wondering why we push `dist` folder in repository, when it is usually
-in gitignore. The reason are
+in gitignore. The reasons are
 [GitHub runners](https://docs.github.com/en/actions/tutorials/create-actions/create-a-javascript-action#commit-tag-and-push-your-action).
 
 ## Usage
@@ -44,14 +39,15 @@ steps:
           maxNumberOfAgents: '3'
           testName: 'CI nightly'
           # Optional — multiline JSON objects:
-          # globalVariableOverrides: |
-          #   {"KEY": "value"}
-          # variableOverridesPerTest: |
-          #   {"test-id": {"KEY": "value"}}
-          # gatewayName: my-gateway
-          # apiUrl: https://api.aiva.works/v1/batches
-          # statusCheckWaitTime: '30'
-          # CTRFReportFilepath: ./batch-ctrf.json
+          globalVariableOverrides: |
+            {"KEY": "value"}
+          variableOverridesPerTest: |
+            {"test-id": {"KEY": "value"}}
+          # Optional configuration values
+          gatewayName: my-gateway
+          apiUrl: https://api.aiva.works/v1/batches
+          pollPeriodSeconds: '10'
+          reportFilePath: ./batch-ctrf.json
 
     - name: Print CTRF Summary
       id: summary
@@ -62,13 +58,10 @@ steps:
       if: always()
 ```
 
-Replace `uses: ./` with your published action reference (for example
-`owner/repo@v1`) when consuming it from another repository.
-
 ## Inputs
 
 | Input                      | Required | Description                                                                                                                                 |
-| -------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+|----------------------------| -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `apiKey`                   | Yes      | AIVA API key.                                                                                                                               |
 | `labels`                   | Yes      | Semicolon-separated labels that select which tests run (e.g. `smoke;regression`). At least one non-empty label is required after splitting. |
 | `maxNumberOfAgents`        | Yes      | Maximum number of agents the batch may use.                                                                                                 |
@@ -77,8 +70,8 @@ Replace `uses: ./` with your published action reference (for example
 | `variableOverridesPerTest` | No       | JSON object mapping test IDs to variable overrides (multiline). Empty input is treated as `{}`.                                             |
 | `gatewayName`              | No       | Gateway name used by aiva-node during the test (default: empty).                                                                            |
 | `apiUrl`                   | No       | Batch API URL: POST to start the batch, GET `{url}/{batchId}` for status polling. Default: `https://api.aiva.works/v1/batches`.             |
-| `statusCheckWaitTime`      | No       | Seconds to wait between status polls. Must be between 5 and 1800. Default: `30`.                                                            |
-| `CTRFReportFilepath`       | No       | Path where the final CTRF JSON is written and uploaded as the `batch-status` artifact. Default: `./batch-ctrf.json`.                        |
+| `pollPeriodSeconds`        | No       | Seconds to wait between status polls. Must be between 5 and 1800. Default: `10`.                                                            |
+| `reportFilePath`           | No       | Path where the final CTRF JSON is written and uploaded as the `batch-status` artifact. Default: `./batch-ctrf.json`.                        |
 
 ## Development
 

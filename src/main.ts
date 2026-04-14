@@ -69,8 +69,8 @@ function isValueInRange(value: number, minValue: number, maxValue: number): bool
  * Main function of the github action.
  */
 export async function run() {
-    const minStatusWaitTime = 5;
-    const maxStatusWaitTime = 1800;
+    const minStatusWaitTime: number = 5;
+    const maxStatusWaitTime: number = 60;
     const artifact: ArtifactClient = new DefaultArtifactClient();
 
     const apiKey: string = core.getInput('apiKey', { required: true });
@@ -83,12 +83,12 @@ export async function run() {
     const variableOverridesPerTestMultiline: string[] = core.getMultilineInput('variableOverridesPerTest', { required: false });
     const gatewayName: string = core.getInput('gatewayName', { required: false });
     const apiUrl: string = core.getInput('apiUrl', { required: false });
-    const batchWaitTimeout: string = core.getInput('statusCheckWaitTime', {
+    const batchWaitTimeoutSeconds: string = core.getInput('pollPeriodSeconds', {
         required: false,
     });
-    const batchProgressTimeout: number = parseInt(core.getInput('batchProgressTimeout', { required: false }));
-    const batchStatusFilepath: PathLike = core.getInput('CTRFReportFilepath');
-    if (!isValueInRange(parseInt(batchWaitTimeout), minStatusWaitTime, maxStatusWaitTime)) {
+    const batchProgressTimeout: number = parseInt(core.getInput('testTimeoutSeconds', { required: false }));
+    const batchStatusFilepath: PathLike = core.getInput('reportFilePath');
+    if (!isValueInRange(parseInt(batchWaitTimeoutSeconds), minStatusWaitTime, maxStatusWaitTime)) {
         core.setFailed(`Wait time is not within sane bounds of ${minStatusWaitTime} and ${maxStatusWaitTime} seconds.`);
     }
 
@@ -113,7 +113,7 @@ export async function run() {
     let previousNumberOfPendingTests: number = Number.MAX_SAFE_INTEGER;
     do {
         core.info('Waiting for test batch to finish.');
-        await sleep(parseInt(batchWaitTimeout));
+        await sleep(parseInt(batchWaitTimeoutSeconds));
         batchStatus = await getBatchStatus(apiUrl, apiKey, batchId);
         core.debug(JSON.stringify(batchStatus));
         lastChangeOfPendingTests = isBatchProgressing(previousNumberOfPendingTests, lastChangeOfPendingTests, batchProgressTimeout, batchStatus);
