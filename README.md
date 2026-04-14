@@ -8,12 +8,14 @@ status polling). API details are documented at
 
 ## What it does
 
-1. **Starts a batch** —  Sends a request to the AIVA API with your chosen labels,
-   agent limit, and optional settings (test name, variable overrides, gateway name, timeouts) to start a new test batch.
+1. **Starts a batch** — Sends a request to the AIVA API with your chosen labels,
+   agent limit, and optional settings (test name, variable overrides, gateway
+   name, timeouts) to start a new test batch.
 1. **Keeps monitoring the batch** — Every ten seconds fetches batch status
    until there are no pending tests.
-1. **Prints a test summary** — Adds a link to the batch in the AIVA UI. Fills in 
-   summary results and uploads it as a workflow artifact named `batch-status`.
+1. **Prints a test summary** — Adds a link to the batch in the AIVA UI.
+   Fills in summary results and uploads it as a workflow artifact named
+   `batch-status`.
 
 The action expects Node 24 (see `action.yml` and `package.json`).
 
@@ -31,6 +33,7 @@ Store your AIVA API key in a
 
 ```yaml
 steps:
+    - 
     - name: Run AIVA batch
       uses: aiva-actions/run@v1
       with:
@@ -40,9 +43,9 @@ steps:
           testName: 'CI nightly'
           # Optional — multiline JSON objects:
           globalVariableOverrides: |
-            {"KEY": "value"}
+              {"KEY": "value"}
           variableOverridesPerTest: |
-            {"test-id": {"KEY": "value"}}
+              {"test-id": {"KEY": "value"}}
           # Optional configuration values
           gatewayName: my-gateway
           apiUrl: https://api.aiva.works/v1/batches
@@ -61,7 +64,7 @@ steps:
 ## Inputs
 
 | Input                      | Required | Description                                                                                                                                 |
-|----------------------------| -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| -------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `apiKey`                   | Yes      | AIVA API key.                                                                                                                               |
 | `labels`                   | Yes      | Semicolon-separated labels that select which tests run (e.g. `smoke;regression`). At least one non-empty label is required after splitting. |
 | `maxNumberOfAgents`        | Yes      | Maximum number of agents the batch may use.                                                                                                 |
