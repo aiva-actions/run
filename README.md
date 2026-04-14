@@ -33,7 +33,12 @@ Store your AIVA API key in a
 
 ```yaml
 steps:
-    - 
+    - name: Checkout aiva-actions/run repo
+      id: checkout
+      uses: actions/checkout@v6
+      with:
+          repository: aiva-actions/run
+
     - name: Run AIVA batch
       uses: aiva-actions/run@v1
       with:
