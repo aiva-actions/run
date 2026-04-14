@@ -42,12 +42,12 @@ inputs:
         description: URL for getting batch status
         required: false
         default: 'https://app.aiva.works/scheduling/'
-    CTRFReportFilepath:
-        description: Filepath where CTRF
+    reportFilePath:
+        description: Filepath where CTRF report should be saved
         required: false
         default: './batch-ctrf.json'
-    statusCheckWaitTime:
-        description: Wait time between retrying API call to check if batch finished.
+    pollPeriodSeconds:
+        description: Wait time between retrying API call to check if batch finished
         required: false
         default: 10
     batchProgressTimeout:
