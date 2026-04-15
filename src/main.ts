@@ -20,22 +20,7 @@ function parseLabels(labelsInput: string) {
 
 function multilineInputToObject(multilineInput: string[]): Object {
     const joined = multilineInput.join('');
-    return joined == '' ? {} : JSON.parse; // #region agent log
-    fetch('http://127.0.0.1:7623/ingest/0061e55f-9794-40ed-a967-fc6fd74fd9d7', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '9d7799' },
-        body: JSON.stringify({
-            sessionId: '9d7799',
-            runId: 'verify',
-            hypothesisId: 'H4',
-            location: 'src/main.ts:isBatchFailed:final-false',
-            message: 'return false (no FailedToStart, summary not failed)',
-            data: {},
-            timestamp: Date.now(),
-        }),
-    }).catch(() => {});
-    // #endregion
-    joined;
+    return joined == '' ? {} : JSON.parse(joined);
 }
 
 /**
@@ -85,7 +70,10 @@ function isValueInRange(value: number, minValue: number, maxValue: number): bool
  * @param endEpochMs - Unix epoch milliseconds
  * @returns Duration as "Xh YYm ZZs" with minutes and seconds zero-padded to 2 digits
  */
-function formatEpochDurationMs(startEpochMs: number, endEpochMs: number): string {
+function formatEpochDurationMs(startEpochMs: number, endEpochMs: number | null): string {
+    if (endEpochMs == null) {
+        return 'n/a';
+    }
     const totalSec = Math.floor(Math.abs(endEpochMs - startEpochMs) / 1000);
     const hours = Math.floor(totalSec / 3600);
     const minutes = Math.floor((totalSec % 3600) / 60);
@@ -109,7 +97,7 @@ function isBatchFailed(batchStatus: CTRFReport): boolean {
     const tests: Test[] = batchStatus.results.tests;
     for (const test of tests) {
         if (test.rawStatus === 'FailedToStart') {
-            return false;
+            return true;
         }
     }
     return false;
@@ -173,7 +161,7 @@ export async function run() {
     core.setOutput('batchId', batchId);
     log_batch_results(batchStatus);
     if (isBatchFailed(batchStatus)) {
-        core.setFailed('AIVA test batch has failed tests.');
+        core.setFailed('AIVA test batch has failed tests or tests that failed to start.');
     }
 
     await writeFile(batchStatusFilepath, JSON.stringify(batchStatus), 'utf-8');
