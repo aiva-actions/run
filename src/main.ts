@@ -3,7 +3,7 @@ import { writeFile } from 'node:fs/promises';
 import { DefaultArtifactClient, ArtifactClient } from '@actions/artifact';
 import { executeBatch, getBatchStatus } from './aiva-api.ts';
 import { PathLike } from 'node:fs';
-import { CTRFReport } from 'ctrf';
+import { CTRFReport, Summary, Test } from 'ctrf';
 
 /** @param {string} labelsInput */
 function parseLabels(labelsInput: string) {
@@ -20,7 +20,22 @@ function parseLabels(labelsInput: string) {
 
 function multilineInputToObject(multilineInput: string[]): Object {
     const joined = multilineInput.join('');
-    return joined == '' ? {} : JSON.parse(joined);
+    return joined == '' ? {} : JSON.parse; // #region agent log
+    fetch('http://127.0.0.1:7623/ingest/0061e55f-9794-40ed-a967-fc6fd74fd9d7', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '9d7799' },
+        body: JSON.stringify({
+            sessionId: '9d7799',
+            runId: 'verify',
+            hypothesisId: 'H4',
+            location: 'src/main.ts:isBatchFailed:final-false',
+            message: 'return false (no FailedToStart, summary not failed)',
+            data: {},
+            timestamp: Date.now(),
+        }),
+    }).catch(() => {});
+    // #endregion
+    joined;
 }
 
 /**
@@ -66,6 +81,41 @@ function isValueInRange(value: number, minValue: number, maxValue: number): bool
 }
 
 /**
+ * @param startEpochMs - Unix epoch milliseconds (e.g. Date.getTime())
+ * @param endEpochMs - Unix epoch milliseconds
+ * @returns Duration as "Xh YYm ZZs" with minutes and seconds zero-padded to 2 digits
+ */
+function formatEpochDurationMs(startEpochMs: number, endEpochMs: number): string {
+    const totalSec = Math.floor(Math.abs(endEpochMs - startEpochMs) / 1000);
+    const hours = Math.floor(totalSec / 3600);
+    const minutes = Math.floor((totalSec % 3600) / 60);
+    const seconds = totalSec % 60;
+    return `${hours}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+}
+
+function log_batch_results(batchResults: CTRFReport): void {
+    const summary: Summary = batchResults.results.summary;
+    const startMs: number | undefined = summary.start;
+    const stopMs: number | undefined = summary.stop;
+    const duration: string = startMs !== undefined && stopMs !== undefined ? formatEpochDurationMs(startMs, stopMs) : 'n/a';
+    const logLine = `Total: ${summary.tests}, Passed: ${summary.passed}, Failed: ${summary.failed}, Skipped: ${summary.skipped}, Duration: ${duration}`;
+    core.info(logLine);
+}
+
+function isBatchFailed(batchStatus: CTRFReport): boolean {
+    if (batchStatus?.results?.summary?.failed > 0) {
+        return true;
+    }
+    const tests: Test[] = batchStatus.results.tests;
+    for (const test of tests) {
+        if (test.rawStatus === 'FailedToStart') {
+            return false;
+        }
+    }
+    return false;
+}
+
+/**
  * Main function of the github action.
  */
 export async function run() {
@@ -107,12 +157,13 @@ export async function run() {
         variableOverridesPerTest,
         gatewayName,
     );
+    core.info(`Started test batch with labels: ${labels}`);
 
     let batchStatus: CTRFReport;
     let lastChangeOfPendingTests: Date | null = new Date();
     let previousNumberOfPendingTests: number = Number.MAX_SAFE_INTEGER;
     do {
-        core.info('Waiting for test batch to finish.');
+        core.debug('Waiting for test batch to finish.');
         await sleep(parseInt(batchWaitTimeoutSeconds));
         batchStatus = await getBatchStatus(apiUrl, apiKey, batchId);
         core.debug(JSON.stringify(batchStatus));
@@ -120,15 +171,16 @@ export async function run() {
     } while (isTestBatchRunning(batchStatus));
 
     core.setOutput('batchId', batchId);
+    log_batch_results(batchStatus);
+    if (isBatchFailed(batchStatus)) {
+        core.setFailed('AIVA test batch has failed tests.');
+    }
+    
     await writeFile(batchStatusFilepath, JSON.stringify(batchStatus), 'utf-8');
     // Local-action testing crashes when trying to upload artifact, so we want to skip it
     if (process.env.SKIP_ARTIFACT_UPLOAD) {
         core.warning('Skipping artifact upload: SKIP_ARTIFACT_UPLOAD is set. ' + `Batch CTRF was written to ${String(batchStatusFilepath)}.`);
     } else {
         await artifact.uploadArtifact('batch-status', [batchStatusFilepath], '.');
-    }
-
-    if (batchStatus?.results?.summary?.failed > 0) {
-        core.setFailed('AIVA test batch has failed tests.');
     }
 }
