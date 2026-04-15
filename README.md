@@ -33,36 +33,25 @@ Store your AIVA API key in a
 
 ```yaml
 steps:
-    - name: Checkout aiva-actions/run repo
-      id: checkout
-      uses: actions/checkout@v6
-      with:
-          repository: aiva-actions/run
-
-    - name: Run AIVA batch
+    - name: Start AIVA batch
+      id: aiva
       uses: aiva-actions/run@v1
       with:
-          apiKey: ${{ secrets.AIVA_API_KEY }}
-          labels: 'smoke;regression'
-          maxNumberOfAgents: '3'
-          testName: 'CI nightly'
-          # Optional — multiline JSON objects:
-          globalVariableOverrides: |
-              {"KEY": "value"}
-          variableOverridesPerTest: |
-              {"test-id": {"KEY": "value"}}
-          # Optional configuration values
-          gatewayName: my-gateway
-          apiUrl: https://api.aiva.works/v1/batches
-          pollPeriodSeconds: '10'
-          reportFilePath: ./batch-ctrf.json
+          apiKey: ${{ secrets.APIKEY }}
+          labels: ${{ inputs.LABELS}}
+          maxNumberOfAgents: ${{ inputs.MAX_NUMBER_OF_AGENTS }}
 
-    - name: Print CTRF Summary
+    - name: Download Summary template
+      id: template-download
+      run: wget https://raw.githubusercontent.com/aiva-actions/run/refs/heads/initial-customization/summary-template.hbs -O ./summary-template.hbs
+
+    - name: Generate CTRF summary
       id: summary
-      uses: ctrf-io/github-test-reporter@v1
+      uses: ctrf-io/github-test-reporter@v1.0.28
       with:
-          report-path: '${{ input.CTRFReportFilepath }}'
-          template-path: 'summary-template.hbf'
+          report-path: ${{ inputs.REPORT_FILEPATH }}
+          template-path: 'summary-template.hbs'
+          custom-report: true
       if: always()
 ```
 
