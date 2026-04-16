@@ -49,7 +49,7 @@ steps:
       id: summary
       uses: ctrf-io/github-test-reporter@v1.0.28
       with:
-          report-path: ${{ inputs.REPORT_FILEPATH }}
+          report-path: './batch-ctrf.json'
           template-path: 'summary-template.hbs'
           custom-report: true
       if: always()
