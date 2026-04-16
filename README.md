@@ -44,6 +44,7 @@ steps:
     - name: Download Summary template
       id: template-download
       run: wget https://raw.githubusercontent.com/aiva-actions/run/refs/heads/main/summary-template.hbs
+      if: always()
 
     - name: Generate CTRF summary
       id: summary
