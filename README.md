@@ -59,10 +59,10 @@ steps:
 
 | Input                      | Required | Description                                                                                                                                 |
 | -------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apiKey`                   | Yes      | AIVA API key.                                                                                                                               |
+| `apiKey`                   | Yes      | AIVA API key, should be added via secrets.                                                                                                  |
 | `labels`                   | Yes      | Semicolon-separated labels that select which tests run (e.g. `smoke;regression`). At least one non-empty label is required after splitting. |
 | `maxNumberOfAgents`        | Yes      | Maximum number of agents the batch may use.                                                                                                 |
-| `testName`                 | No       | Custom batch name (default: empty).                                                                                                         |
+| `testName`                 | No       | Custom batch name.                                                                                                                          |
 | `globalVariableOverrides`  | No       | JSON object applied to all tests in the batch (multiline). Empty input is treated as `{}`.                                                  |
 | `variableOverridesPerTest` | No       | JSON object mapping test IDs to variable overrides (multiline). Empty input is treated as `{}`.                                             |
 | `gatewayName`              | No       | Gateway name used by aiva-node during the test (default: empty).                                                                            |
