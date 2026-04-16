@@ -1,24 +1,60 @@
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
+name: AIVA batch test run
+description: Start an AIVA test batch via POST /v1/batches (see
+    https://app.aiva.works/docs/api/batches-run-batch)
+author: YSoft AIVA team
 
-# Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: heart
-  color: red
+    icon: airplay
+    color: green
 
-# Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
-    required: true
-    default: '1000'
-
-# Define your outputs here.
-outputs:
-  time:
-    description: Your output description here
+    apiKey:
+        description: AIVA API key (store in a repository or organization secret)
+        required: true
+    labels:
+        description: Semicolon-separated labels used to select tests for the batch (e.g.
+            "smoke,regression")
+        required: true
+    testName:
+        description: Custom name of the test
+        required: false
+        default: ''
+    maxNumberOfAgents:
+        description: Maximum number of agents the batch can use for test execution.
+        required: true
+    globalVariableOverrides:
+        description: Override for all variables in a test Batch.
+        required: false
+        default: ''
+    variableOverridesPerTest:
+        description: Override for variables in a test specified by test ID.
+        required: false
+        default: ''
+    gatewayName:
+        description: Name of the gateway that is used by aiva-node during test.
+        required: false
+        default: ''
+    apiUrl:
+        description: URL for starting a test batch
+        required: false
+        default: 'https://api.aiva.works/v1/batches'
+    aivaBatchUrl:
+        description: URL for getting batch status
+        required: false
+        default: 'https://app.aiva.works/scheduling/'
+    reportFilePath:
+        description: Filepath where CTRF report should be saved
+        required: false
+        default: './batch-ctrf.json'
+    pollPeriodSeconds:
+        description: Wait time between retrying API call to check if batch finished
+        required: false
+        default: 10
+    batchProgressTimeout:
+        description: How log the action should wait for a change in pending tests before giving up
+        required: false
+        default: 1800
 
 runs:
-  using: node24
-  main: dist/index.js
+    using: node24
+    main: dist/index.js
