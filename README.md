@@ -43,7 +43,7 @@ steps:
 
     - name: Download Summary template
       id: template-download
-      run: wget https://raw.githubusercontent.com/aiva-actions/run/refs/heads/initial-customization/summary-template.hbs
+      run: wget https://raw.githubusercontent.com/aiva-actions/run/refs/heads/main/summary-template.hbs
 
     - name: Generate CTRF summary
       id: summary
