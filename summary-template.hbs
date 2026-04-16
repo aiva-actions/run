@@ -10,11 +10,11 @@
 
 ## Failed Tests Summary
 
-| **Name** | **Status** | **Link** | **Failure Message** |
+| **Name** | **Status** | **Failure Message** | **Link** |
 | --- | --- | --- | --- |
 {{#each ctrf.tests}}
 {{#if (eq status 'failed')}}
-| {{name}} | {{status}} ❌ | {{#if extra.testResultLink}}[View Result]({{extra.testResultLink}}){{else}}-{{/if}} | {{#if message}}{{message}}{{else}}No failure message{{/if}} |
+| {{name}} | {{status}} ❌ | {{#if message}}{{message}}{{else}}No failure message{{/if}} | {{#if extra.testResultLink}}[View Result]({{extra.testResultLink}}){{else}}-{{/if}} |
 {{/if}}
 {{/each}}
 
