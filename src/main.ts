@@ -30,21 +30,21 @@ export async function run() {
     const pollPeriodSeconds: string = core.getInput('pollPeriodSeconds', {
         required: false,
     });
-    const verbose: string = core.getInput('verbose', {required: false})
+    const verbose: string = core.getInput('verbose', { required: false });
     const batchStatusFilepath: PathLike = core.getInput('reportFilePath');
 
     const labels: string[] = parseLabels(labelsInput, []);
-    
+
     if (!isInRange(parseInt(pollPeriodSeconds), MIN_POLL_SECONDS, MAX_POLL_SECONDS)) {
         core.error(`Poll period ${pollPeriodSeconds} is invalid. Value must be between ${MIN_POLL_SECONDS} and ${MAX_POLL_SECONDS}.`);
-        return
+        return;
     }
 
     const aivaOptions: AIVAOptions = {
         apiKey: apiKey,
         aivaUrl: apiUrl,
         pollPeriod: parseInt(pollPeriodSeconds),
-        format: "ctrf",
+        format: 'ctrf',
         verbose: verbose === 'true',
         logger: {
             logDebug: (message: string): void => core.debug(message),

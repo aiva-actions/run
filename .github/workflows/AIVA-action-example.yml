@@ -1,34 +1,34 @@
 name: Run AIVA Test Batch
 
 on:
-  schedule:
-    - cron: '10 * * * *'
+    schedule:
+        - cron: '10 * * * *'
 
 jobs:
-  aiva_batch_job:
-    name: Run AIVA batch via CI (example)
-    runs-on: ubuntu-latest
+    aiva_batch_job:
+        name: Run AIVA batch via CI (example)
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: Start AIVA batch
-        id: aiva
-        uses: aiva-actions/run@v1
-        with:
-          apiKey: ${{ secrets.APIKEY }}
-          labels: 'example;ci'
-          maxNumberOfAgents: 1
-          testName: 'CI Example Batch'
+        steps:
+            - name: Start AIVA batch
+              id: aiva
+              uses: aiva-actions/run@v1
+              with:
+                  apiKey: ${{ secrets.APIKEY }}
+                  labels: 'example;ci'
+                  maxNumberOfAgents: 1
+                  testName: 'CI Example Batch'
 
-      - name: Download Summary template
-        id: template-download
-        run: wget https://raw.githubusercontent.com/aiva-actions/run/refs/heads/main/summary-template.hbs
-        if: always()
-        
-      - name: Generate CTRF summary
-        id: summary
-        uses: ctrf-io/github-test-reporter@v1.0.28
-        with:
-          report-path: ${{ inputs.REPORT_FILEPATH }}
-          template-path: 'summary-template.hbs'
-          custom-report: true
-        if: always()
+            - name: Download Summary template
+              id: template-download
+              run: wget https://raw.githubusercontent.com/aiva-actions/run/refs/heads/main/summary-template.hbs
+              if: always()
+
+            - name: Generate CTRF summary
+              id: summary
+              uses: ctrf-io/github-test-reporter@v1.0.28
+              with:
+                  report-path: ${{ inputs.REPORT_FILEPATH }}
+                  template-path: 'summary-template.hbs'
+                  custom-report: true
+              if: always()
