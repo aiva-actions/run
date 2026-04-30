@@ -20,7 +20,6 @@ jobs:
                   labels: 'example;ci'
                   maxNumberOfAgents: 1
                   testName: 'CI Example Batch'
-                  reportFilePath: './batch-ctrf.json'
 
             - name: Download Summary template
               id: template-download
@@ -31,7 +30,7 @@ jobs:
               id: summary
               uses: ctrf-io/github-test-reporter@v1.0.28
               with:
-                  report-path: ${{ inputs.reportFilePath }}
+                  report-path: './batch-ctrf.json'
                   template-path: 'summary-template.hbs'
                   custom-report: true
               if: always()
