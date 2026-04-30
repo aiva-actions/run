@@ -1,6 +1,5 @@
 name: Run AIVA Test Batch
 
-
 on:
     schedule:
         - cron: '10 * * * *'
