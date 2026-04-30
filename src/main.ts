@@ -153,7 +153,7 @@ export async function run() {
     do {
         core.debug('Waiting for test batch to finish.');
         await sleep(parseInt(batchWaitTimeoutSeconds));
-        batchStatus = await getBatchStatus(apiUrl + '/scheduling', apiKey, batchId);
+        batchStatus = await getBatchStatus(apiUrl + '/v1/batches/', apiKey, batchId);
         core.debug(JSON.stringify(batchStatus));
         lastChangeOfPendingTests = isBatchProgressing(previousNumberOfPendingTests, lastChangeOfPendingTests, batchProgressTimeout, batchStatus);
     } while (isTestBatchRunning(batchStatus));

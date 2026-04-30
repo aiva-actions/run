@@ -66,7 +66,7 @@ export async function executeBatch(
  * @param {string} batchId
  */
 export async function getBatchStatus(apiUrl: string, apiKey: string, batchId: string): Promise<CTRFReport> {
-    const res: Response = await fetch(apiUrl + '/' + batchId, {
+    const res: Response = await fetch(apiUrl + batchId, {
         method: 'GET',
         headers: {
             Accept: 'application/json',
