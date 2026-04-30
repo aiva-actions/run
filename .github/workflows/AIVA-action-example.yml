@@ -1,8 +1,11 @@
 name: Run AIVA Test Batch
 
+
 on:
     schedule:
         - cron: '10 * * * *'
+
+permissions: read-all
 
 jobs:
     aiva_batch_job:
@@ -18,7 +21,6 @@ jobs:
                   labels: 'example;ci'
                   maxNumberOfAgents: 1
                   testName: 'CI Example Batch'
-                  reportFilepath: './batch-ctrf.json'
 
             - name: Download Summary template
               id: template-download
