@@ -59,7 +59,7 @@ steps:
 ## Inputs
 
 | Input                      | Required | Description                                                                                                                                 |
-| -------------------------- | -------- |---------------------------------------------------------------------------------------------------------------------------------------------|
+| -------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `apiKey`                   | Yes      | AIVA API key, should be added via secrets.                                                                                                  |
 | `labels`                   | Yes      | Semicolon-separated labels that select which tests run (e.g. `smoke;regression`). At least one non-empty label is required after splitting. |
 | `maxNumberOfAgents`        | Yes      | Maximum number of agents the batch may use.                                                                                                 |
