@@ -44,12 +44,13 @@ steps:
     - name: Download Summary template
       id: template-download
       run: wget https://raw.githubusercontent.com/aiva-actions/run/refs/heads/main/summary-template.hbs
+      if: always()
 
     - name: Generate CTRF summary
       id: summary
       uses: ctrf-io/github-test-reporter@v1.0.28
       with:
-          report-path: ${{ inputs.REPORT_FILEPATH }}
+          report-path: './batch-ctrf.json'
           template-path: 'summary-template.hbs'
           custom-report: true
       if: always()

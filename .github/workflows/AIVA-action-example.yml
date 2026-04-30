@@ -18,6 +18,7 @@ jobs:
                   labels: 'example;ci'
                   maxNumberOfAgents: 1
                   testName: 'CI Example Batch'
+                  reportFilepath: './batch-ctrf.json'
 
             - name: Download Summary template
               id: template-download
