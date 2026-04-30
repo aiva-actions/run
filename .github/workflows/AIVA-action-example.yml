@@ -4,6 +4,8 @@ on:
     schedule:
         - cron: '10 * * * *'
 
+permissions: read-all
+
 jobs:
     aiva_batch_job:
         name: Run AIVA batch via CI (example)
@@ -18,7 +20,7 @@ jobs:
                   labels: 'example;ci'
                   maxNumberOfAgents: 1
                   testName: 'CI Example Batch'
-                  reportFilepath: './batch-ctrf.json'
+                  reportFilePath: './batch-ctrf.json'
 
             - name: Download Summary template
               id: template-download
@@ -29,7 +31,7 @@ jobs:
               id: summary
               uses: ctrf-io/github-test-reporter@v1.0.28
               with:
-                  report-path: ${{ inputs.reportFilepath }}
+                  report-path: ${{ inputs.reportFilePath }}
                   template-path: 'summary-template.hbs'
                   custom-report: true
               if: always()
