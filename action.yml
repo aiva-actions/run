@@ -37,7 +37,7 @@ inputs:
     apiUrl:
         description: URL for starting a test batch
         required: false
-        default: 'https://api.aiva.works'
+        default: 'https://api.aiva.works/'
     reportFilePath:
         description: Filepath where CTRF report should be saved
         required: false
