@@ -4,7 +4,7 @@ import { DefaultArtifactClient, ArtifactClient } from '@actions/artifact';
 import { PathLike } from 'node:fs';
 import { executeBatch, waitForBatchCompleted, isInRange, parseLabels } from 'runner';
 import { MIN_POLL_SECONDS, MAX_POLL_SECONDS } from 'runner';
-import type { RunTestBatchResponse, AIVAOptions, AIVAReport } from 'runner';
+import type { RunTestBatchResponse, AIVAOptions } from 'runner';
 
 function multilineInputToObject(multilineInput: string[]): Object {
     const joined = multilineInput.join('');
@@ -15,8 +15,6 @@ function multilineInputToObject(multilineInput: string[]): Object {
  * Main function of the github action.
  */
 export async function run() {
-    const artifact: ArtifactClient = new DefaultArtifactClient();
-
     const apiKey: string = core.getInput('apiKey', { required: true });
     const labelsInput: string = core.getInput('labels', { required: true });
     const maxNumberOfAgents: string = core.getInput('maxNumberOfAgents', {
@@ -76,6 +74,7 @@ export async function run() {
     if (process.env.SKIP_ARTIFACT_UPLOAD) {
         core.warning('Skipping artifact upload: SKIP_ARTIFACT_UPLOAD is set. ' + `Batch CTRF was written to ${String(batchStatusFilepath)}.`);
     } else {
+        const artifact: ArtifactClient = new DefaultArtifactClient();
         await artifact.uploadArtifact('batch-status', [batchStatusFilepath], '.');
     }
 }
