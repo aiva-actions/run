@@ -53,7 +53,7 @@ export async function run() {
     };
 
     const batchInfo: RunTestBatchResponse = await executeBatch(
-        apiUrl + '/v1/batches',
+        apiUrl,
         apiKey,
         labels,
         maxNumberOfAgents,
@@ -64,7 +64,7 @@ export async function run() {
     );
     core.info(`Started test batch with labels: ${labels}`);
 
-    const report: AIVAReport = await waitForBatchCompleted(batchInfo.testBatchId, aivaOptions);
+    const report = await waitForBatchCompleted(batchInfo.testBatchId, aivaOptions);
 
     await writeFile(batchStatusFilepath, report.reportContent, 'utf-8');
 
