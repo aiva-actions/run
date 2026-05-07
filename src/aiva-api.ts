@@ -28,7 +28,7 @@ export async function executeBatch(
 ): Promise<string> {
     core.info('Executing test batch containing tests labeled with: ' + labels);
 
-    const res: Response = await fetch(apiUrl, {
+    const res = await fetch(apiUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -52,8 +52,8 @@ export async function executeBatch(
 
     core.info(`AIVA batch request accepted (${res.status})`);
 
-    const responseJSON: runTestBatchResponse = (await res.json()) as runTestBatchResponse;
-    const batchId: string = responseJSON.testBatchId;
+    const responseJSON = (await res.json()) as runTestBatchResponse;
+    const batchId = responseJSON.testBatchId;
     if (!batchId) {
         throw new Error('AIVA batch response missing testBatchId');
     }

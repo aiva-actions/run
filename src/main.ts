@@ -1,10 +1,10 @@
 import * as core from '@actions/core';
 import { writeFile } from 'node:fs/promises';
-import { DefaultArtifactClient, ArtifactClient } from '@actions/artifact';
+import { DefaultArtifactClient } from '@actions/artifact';
 import { PathLike } from 'node:fs';
 import { executeBatch, waitForBatchCompleted, isInRange, parseLabels } from 'runner';
 import { MIN_POLL_SECONDS, MAX_POLL_SECONDS } from 'runner';
-import type { RunTestBatchResponse, AIVAOptions } from 'runner';
+import type { AIVAOptions } from 'runner';
 
 function multilineInputToObject(multilineInput: string[]): Object {
     const joined = multilineInput.join('');
@@ -15,23 +15,23 @@ function multilineInputToObject(multilineInput: string[]): Object {
  * Main function of the github action.
  */
 export async function run() {
-    const apiKey: string = core.getInput('apiKey', { required: true });
-    const labelsInput: string = core.getInput('labels', { required: true });
-    const maxNumberOfAgents: string = core.getInput('maxNumberOfAgents', {
+    const apiKey = core.getInput('apiKey', { required: true });
+    const labelsInput = core.getInput('labels', { required: true });
+    const maxNumberOfAgents = core.getInput('maxNumberOfAgents', {
         required: true,
     });
-    const batchName: string = core.getInput('testName', { required: false });
-    const globalVariableOverridesMultiline: string[] = core.getMultilineInput('globalVariableOverrides', { required: false });
-    const variableOverridesPerTestMultiline: string[] = core.getMultilineInput('variableOverridesPerTest', { required: false });
-    const gatewayName: string = core.getInput('gatewayName', { required: false });
-    const apiUrl: string = core.getInput('apiUrl', { required: false });
-    const pollPeriodSeconds: string = core.getInput('pollPeriodSeconds', {
+    const batchName = core.getInput('testName', { required: false });
+    const globalVariableOverridesMultiline = core.getMultilineInput('globalVariableOverrides', { required: false });
+    const variableOverridesPerTestMultiline = core.getMultilineInput('variableOverridesPerTest', { required: false });
+    const gatewayName = core.getInput('gatewayName', { required: false });
+    const apiUrl = core.getInput('apiUrl', { required: false });
+    const pollPeriodSeconds = core.getInput('pollPeriodSeconds', {
         required: false,
     });
-    const verbose: string = core.getInput('verbose', { required: false });
+    const verbose = core.getInput('verbose', { required: false });
     const batchStatusFilepath: PathLike = core.getInput('reportFilePath');
 
-    const labels: string[] = parseLabels(labelsInput, []);
+    const labels = parseLabels(labelsInput, []);
 
     if (!isInRange(parseInt(pollPeriodSeconds), MIN_POLL_SECONDS, MAX_POLL_SECONDS)) {
         core.error(`Poll period ${pollPeriodSeconds} is invalid. Value must be between ${MIN_POLL_SECONDS} and ${MAX_POLL_SECONDS}.`);
@@ -50,7 +50,7 @@ export async function run() {
         },
     };
 
-    const batchInfo: RunTestBatchResponse = await executeBatch(
+    const batchInfo = await executeBatch(
         apiUrl,
         apiKey,
         labels,
@@ -74,7 +74,7 @@ export async function run() {
     if (process.env.SKIP_ARTIFACT_UPLOAD) {
         core.warning('Skipping artifact upload: SKIP_ARTIFACT_UPLOAD is set. ' + `Batch CTRF was written to ${String(batchStatusFilepath)}.`);
     } else {
-        const artifact: ArtifactClient = new DefaultArtifactClient();
+        const artifact = new DefaultArtifactClient();
         await artifact.uploadArtifact('batch-status', [batchStatusFilepath], '.');
     }
 }
