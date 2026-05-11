@@ -34,7 +34,7 @@ export async function run() {
     const labels = parseLabels(labelsInput, []);
 
     if (!isInRange(parseInt(pollPeriodSeconds), MIN_POLL_SECONDS, MAX_POLL_SECONDS)) {
-        core.error(`Poll period ${pollPeriodSeconds} is invalid. Value must be between ${MIN_POLL_SECONDS} and ${MAX_POLL_SECONDS}.`);
+        core.setFailed(`Poll period ${pollPeriodSeconds} is invalid. Value must be between ${MIN_POLL_SECONDS} and ${MAX_POLL_SECONDS}.`);
         return;
     }
 
@@ -67,7 +67,7 @@ export async function run() {
     await writeFile(batchStatusFilepath, report.reportContent, 'utf-8');
 
     if (!report.success) {
-        core.error('AIVA test batch has failed tests or tests that failed to start.');
+        core.setFailed('AIVA test batch has failed tests or tests that failed to start.');
     }
 
     // Local-action testing crashes when trying to upload artifact, so we want to skip it
