@@ -6,7 +6,7 @@ import { executeBatch, waitForBatchCompleted, isInRange, parseLabels } from 'run
 import { MIN_POLL_SECONDS, MAX_POLL_SECONDS } from 'runner';
 import type { AIVAOptions } from 'runner';
 
-function multilineInputToObject(multilineInput: string[]): Object {
+function multilineInputToObject(multilineInput: string[]): object {
     const joined = multilineInput.join('');
     return joined == '' ? {} : JSON.parse(joined);
 }
