@@ -46,6 +46,10 @@ inputs:
         description: Wait time between retrying API call to check if batch finished
         required: false
         default: 10
+    verbose:
+        description: Set to true when additional output should be logged
+        required: false
+        default: false
 
 runs:
     using: node24

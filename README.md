@@ -59,7 +59,7 @@ steps:
 ## Inputs
 
 | Input                      | Required | Description                                                                                                                                 |
-| -------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+|----------------------------|----------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | `apiKey`                   | Yes      | AIVA API key, should be added via secrets.                                                                                                  |
 | `labels`                   | Yes      | Semicolon-separated labels that select which tests run (e.g. `smoke;regression`). At least one non-empty label is required after splitting. |
 | `maxNumberOfAgents`        | Yes      | Maximum number of agents the batch may use.                                                                                                 |
@@ -70,6 +70,7 @@ steps:
 | `apiUrl`                   | No       | Batch API URL: POST to start the batch, GET `{url}/{batchId}` for status polling. Default: `https://api.aiva.works/`.                       |
 | `pollPeriodSeconds`        | No       | Seconds to wait between status polls. Must be between 5 and 1800. Default: `10`.                                                            |
 | `reportFilePath`           | No       | Path where the batch run report (CTRF or JUnit) is written and uploaded as the `batch-status` artifact. Default: `./batch-ctrf.json`.       |
+| `verbose`                  | No       | Set to true when additional logs should be logged                                                                                           |
 
 ## Development
 
