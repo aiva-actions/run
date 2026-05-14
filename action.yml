@@ -15,8 +15,8 @@ inputs:
         description: Semicolon-separated labels used to select tests for the batch (e.g.
             "smoke,regression")
         required: true
-    testName:
-        description: Custom name of the test
+    batchName:
+        description: Custom name of the test batch
         required: false
         default: ''
     maxNumberOfAgents:
@@ -46,10 +46,10 @@ inputs:
         description: Wait time between retrying API call to check if batch finished
         required: false
         default: 10
-    batchProgressTimeout:
-        description: How log the action should wait for a change in pending tests before giving up
+    verbose:
+        description: Set to true when additional output should be logged
         required: false
-        default: 1800
+        default: false
 
 runs:
     using: node24
