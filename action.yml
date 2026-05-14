@@ -15,8 +15,8 @@ inputs:
         description: Semicolon-separated labels used to select tests for the batch (e.g.
             "smoke,regression")
         required: true
-    testName:
-        description: Custom name of the test
+    batchName:
+        description: Custom name of the test batch
         required: false
         default: ''
     maxNumberOfAgents:

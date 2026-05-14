@@ -20,7 +20,7 @@ export async function run() {
     const maxNumberOfAgents = core.getInput('maxNumberOfAgents', {
         required: true,
     });
-    const batchName = core.getInput('testName', { required: false });
+    const batchName = core.getInput('batchName', { required: false });
     const globalVariableOverridesMultiline = core.getMultilineInput('globalVariableOverrides', { required: false });
     const variableOverridesPerTestMultiline = core.getMultilineInput('variableOverridesPerTest', { required: false });
     const gatewayName = core.getInput('gatewayName', { required: false });
