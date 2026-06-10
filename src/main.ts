@@ -33,10 +33,9 @@ export async function run() {
         return;
     }
 
-
     if (batchId) {
         const disallowedOverrides: string[] = [];
-         if (labelsInput) {
+        if (labelsInput) {
             disallowedOverrides.push('labels');
         }
         if (maxNumberOfAgents) {

@@ -133896,14 +133896,14 @@ function formatEpochDurationMs(startEpochMs, endEpochMs) {
  * @param {Request | string | URL} apiUrl
  * @param {string} apiKey
  * @param {string[]} labels
- * @param {string} maxNumberOfAgents
+ * @param {string} [maxNumberOfAgents] optional; omitted from the request when undefined so the backend default applies
  * @param {string} batchName
  * @param {object} globalVariableOverrides
  * @param {object} variableOverridesPerTest
  * @param {string} gatewayName
  * @returns object batchID of the newly created batch in AIVA
  */
-async function executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents, batchName, globalVariableOverrides, variableOverridesPerTest, gatewayName) {
+async function executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents, batchName, globalVariableOverrides, variableOverridesPerTest, gatewayName, batchId) {
     console.log('Executing test batch with following parameters');
     let res;
     try {
@@ -133921,6 +133921,7 @@ async function executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents, batchName
                 globalVariablesOverrides: globalVariableOverrides,
                 variablesOverridesPerTest: variableOverridesPerTest,
                 gatewayName: gatewayName,
+                batchId: batchId,
             }),
         });
     }
@@ -134037,7 +134038,7 @@ async function run() {
             logInfo: (message) => info(message),
         },
     };
-    const batchInfo = await executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents || undefined, batchName, multilineInputToObject(globalVariableOverridesMultiline), multilineInputToObject(variableOverridesPerTestMultiline), gatewayName);
+    const batchInfo = await executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents || undefined, batchName, multilineInputToObject(globalVariableOverridesMultiline), multilineInputToObject(variableOverridesPerTestMultiline), gatewayName, batchId || undefined);
     info(batchId ? `Started test batch from batchId: ${batchId}` : `Started test batch with labels: ${labels}`);
     const report = await waitForBatchCompleted(batchInfo.testBatchId, aivaOptions);
     await writeFile$1(batchStatusFilepath, report.reportContent, 'utf-8');
