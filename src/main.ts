@@ -16,7 +16,7 @@ function multilineInputToObject(multilineInput: string[]): object {
  */
 export async function run() {
     const apiKey = core.getInput('apiKey', { required: true });
-    const labelsInput = core.getInput('labels', { required: true });
+    const labelsInput = core.getInput('labels', { required: false });
     const maxNumberOfAgents = core.getInput('maxNumberOfAgents', {
         required: true,
     });
