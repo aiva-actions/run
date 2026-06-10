@@ -13,15 +13,24 @@ inputs:
         required: true
     labels:
         description: Semicolon-separated labels used to select tests for the batch (e.g.
-            "smoke,regression")
-        required: true
+            "smoke,regression"). Required unless batchId is provided.
+        required: false
+        default: ''
+    batchId:
+        description: Run a specific existing batch by its ID instead of selecting tests
+            by labels. Mutually exclusive with labels. When set, only batchName may be
+            overridden (maxNumberOfAgents, variable overrides and gatewayName are ignored).
+        required: false
+        default: ''
     batchName:
         description: Custom name of the test batch
         required: false
         default: ''
     maxNumberOfAgents:
         description: Maximum number of agents the batch can use for test execution.
-        required: true
+            Defaults to 1. Ignored (and rejected) when batchId is provided.
+        required: false
+        default: ''
     globalVariableOverrides:
         description: Override for all variables in a test Batch.
         required: false

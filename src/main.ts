@@ -16,22 +16,48 @@ function multilineInputToObject(multilineInput: string[]): object {
  */
 export async function run() {
     const apiKey = core.getInput('apiKey', { required: true });
-    const labelsInput = core.getInput('labels', { required: true });
-    const maxNumberOfAgents = core.getInput('maxNumberOfAgents', {
-        required: true,
-    });
+    const labelsInput = core.getInput('labels', { required: false });
+    const batchId = core.getInput('batchId', { required: false });
+    const maxNumberOfAgents = core.getInput('maxNumberOfAgents', { required: false });
     const batchName = core.getInput('batchName', { required: false });
     const globalVariableOverridesMultiline = core.getMultilineInput('globalVariableOverrides', { required: false });
     const variableOverridesPerTestMultiline = core.getMultilineInput('variableOverridesPerTest', { required: false });
     const gatewayName = core.getInput('gatewayName', { required: false });
     const apiUrl = core.getInput('apiUrl', { required: false });
-    const pollPeriodSeconds = core.getInput('pollPeriodSeconds', {
-        required: false,
-    });
+    const pollPeriodSeconds = core.getInput('pollPeriodSeconds', { required: false });
     const verbose = core.getInput('verbose', { required: false });
     const batchStatusFilepath: PathLike = core.getInput('reportFilePath');
 
-    const labels = parseLabels(labelsInput, []);
+    if (!labelsInput && !batchId) {
+        core.setFailed('Either labels or batchId must be provided.');
+        return;
+    }
+
+
+    if (batchId) {
+        const disallowedOverrides: string[] = [];
+         if (labelsInput) {
+            disallowedOverrides.push('labels');
+        }
+        if (maxNumberOfAgents) {
+            disallowedOverrides.push('maxNumberOfAgents');
+        }
+        if (globalVariableOverridesMultiline.join('')) {
+            disallowedOverrides.push('globalVariableOverrides');
+        }
+        if (variableOverridesPerTestMultiline.join('')) {
+            disallowedOverrides.push('variableOverridesPerTest');
+        }
+        if (gatewayName) {
+            disallowedOverrides.push('gatewayName');
+        }
+        if (disallowedOverrides.length > 0) {
+            core.setFailed(`When batchId is provided, these inputs cannot be overridden: ${disallowedOverrides.join(', ')}. Only batchName may be overridden.`);
+            return;
+        }
+    }
+
+    const labels = labelsInput ? parseLabels(labelsInput, []) : undefined;
 
     if (!isInRange(parseInt(pollPeriodSeconds), MIN_POLL_SECONDS, MAX_POLL_SECONDS)) {
         core.setFailed(`Poll period ${pollPeriodSeconds} is invalid. Value must be between ${MIN_POLL_SECONDS} and ${MAX_POLL_SECONDS}.`);
@@ -54,13 +80,14 @@ export async function run() {
         apiUrl,
         apiKey,
         labels,
-        maxNumberOfAgents,
+        maxNumberOfAgents || undefined,
         batchName,
         multilineInputToObject(globalVariableOverridesMultiline),
         multilineInputToObject(variableOverridesPerTestMultiline),
         gatewayName,
+        batchId || undefined,
     );
-    core.info(`Started test batch with labels: ${labels}`);
+    core.info(batchId ? `Started test batch from batchId: ${batchId}` : `Started test batch with labels: ${labels}`);
 
     const report = await waitForBatchCompleted(batchInfo.testBatchId, aivaOptions);
 

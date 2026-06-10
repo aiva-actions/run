@@ -133985,21 +133985,44 @@ function multilineInputToObject(multilineInput) {
  */
 async function run() {
     const apiKey = getInput('apiKey', { required: true });
-    const labelsInput = getInput('labels', { required: true });
-    const maxNumberOfAgents = getInput('maxNumberOfAgents', {
-        required: true,
-    });
+    const labelsInput = getInput('labels', { required: false });
+    const batchId = getInput('batchId', { required: false });
+    const maxNumberOfAgents = getInput('maxNumberOfAgents', { required: false });
     const batchName = getInput('batchName', { required: false });
     const globalVariableOverridesMultiline = getMultilineInput('globalVariableOverrides', { required: false });
     const variableOverridesPerTestMultiline = getMultilineInput('variableOverridesPerTest', { required: false });
     const gatewayName = getInput('gatewayName', { required: false });
     const apiUrl = getInput('apiUrl', { required: false });
-    const pollPeriodSeconds = getInput('pollPeriodSeconds', {
-        required: false,
-    });
+    const pollPeriodSeconds = getInput('pollPeriodSeconds', { required: false });
     const verbose = getInput('verbose', { required: false });
     const batchStatusFilepath = getInput('reportFilePath');
-    const labels = parseLabels(labelsInput);
+    if (!labelsInput && !batchId) {
+        setFailed('Either labels or batchId must be provided.');
+        return;
+    }
+    if (batchId) {
+        const disallowedOverrides = [];
+        if (labelsInput) {
+            disallowedOverrides.push('labels');
+        }
+        if (maxNumberOfAgents) {
+            disallowedOverrides.push('maxNumberOfAgents');
+        }
+        if (globalVariableOverridesMultiline.join('')) {
+            disallowedOverrides.push('globalVariableOverrides');
+        }
+        if (variableOverridesPerTestMultiline.join('')) {
+            disallowedOverrides.push('variableOverridesPerTest');
+        }
+        if (gatewayName) {
+            disallowedOverrides.push('gatewayName');
+        }
+        if (disallowedOverrides.length > 0) {
+            setFailed(`When batchId is provided, these inputs cannot be overridden: ${disallowedOverrides.join(', ')}. Only batchName may be overridden.`);
+            return;
+        }
+    }
+    const labels = labelsInput ? parseLabels(labelsInput) : undefined;
     if (!isInRange(parseInt(pollPeriodSeconds), MIN_POLL_SECONDS, MAX_POLL_SECONDS)) {
         setFailed(`Poll period ${pollPeriodSeconds} is invalid. Value must be between ${MIN_POLL_SECONDS} and ${MAX_POLL_SECONDS}.`);
         return;
@@ -134014,8 +134037,8 @@ async function run() {
             logInfo: (message) => info(message),
         },
     };
-    const batchInfo = await executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents, batchName, multilineInputToObject(globalVariableOverridesMultiline), multilineInputToObject(variableOverridesPerTestMultiline), gatewayName);
-    info(`Started test batch with labels: ${labels}`);
+    const batchInfo = await executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents || undefined, batchName, multilineInputToObject(globalVariableOverridesMultiline), multilineInputToObject(variableOverridesPerTestMultiline), gatewayName);
+    info(batchId ? `Started test batch from batchId: ${batchId}` : `Started test batch with labels: ${labels}`);
     const report = await waitForBatchCompleted(batchInfo.testBatchId, aivaOptions);
     await writeFile$1(batchStatusFilepath, report.reportContent, 'utf-8');
     if (!report.success) {
