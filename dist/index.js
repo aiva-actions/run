@@ -1,6 +1,7 @@
 import * as os from 'os';
 import os__default from 'os';
-import crypto$1 from 'crypto';
+import * as crypto$1 from 'crypto';
+import crypto__default from 'crypto';
 import * as require$$0$4 from 'fs';
 import require$$0__default, { promises as promises$1 } from 'fs';
 import path$1 from 'path';
@@ -168,6 +169,36 @@ function escapeProperty(s) {
         .replace(/\n/g, '%0A')
         .replace(/:/g, '%3A')
         .replace(/,/g, '%2C');
+}
+
+// For internal use, subject to change.
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function issueFileCommand(command, message) {
+    const filePath = process.env[`GITHUB_${command}`];
+    if (!filePath) {
+        throw new Error(`Unable to find environment variable for file command ${command}`);
+    }
+    if (!require$$0$4.existsSync(filePath)) {
+        throw new Error(`Missing file at path: ${filePath}`);
+    }
+    require$$0$4.appendFileSync(filePath, `${toCommandValue(message)}${os.EOL}`, {
+        encoding: 'utf8'
+    });
+}
+function prepareKeyValueMessage(key, value) {
+    const delimiter = `ghadelimiter_${crypto$1.randomUUID()}`;
+    const convertedValue = toCommandValue(value);
+    // These should realistically never happen, but just in case someone finds a
+    // way to exploit uuid generation let's not allow keys or values that contain
+    // the delimiter.
+    if (key.includes(delimiter)) {
+        throw new Error(`Unexpected input: name should not contain the delimiter "${delimiter}"`);
+    }
+    if (convertedValue.includes(delimiter)) {
+        throw new Error(`Unexpected input: value should not contain the delimiter "${delimiter}"`);
+    }
+    return `${key}<<${delimiter}${os.EOL}${convertedValue}${os.EOL}${delimiter}`;
 }
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -28094,6 +28125,21 @@ function getMultilineInput(name, options) {
     }
     return inputs.map(input => input.trim());
 }
+/**
+ * Sets the value of an output.
+ *
+ * @param     name     name of the output to set
+ * @param     value    value to store. Non-string values will be converted to a string via JSON.stringify
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function setOutput(name, value) {
+    const filePath = process.env['GITHUB_OUTPUT'] || '';
+    if (filePath) {
+        return issueFileCommand('OUTPUT', prepareKeyValueMessage(name, value));
+    }
+    process.stdout.write(os.EOL);
+    issueCommand('set-output', { name }, toCommandValue(value));
+}
 //-----------------------------------------------------------------------
 // Results
 //-----------------------------------------------------------------------
@@ -28374,7 +28420,7 @@ function requireFileCommand () {
 	fileCommand.prepareKeyValueMessage = prepareKeyValueMessage;
 	// We use any as a valid input type
 	/* eslint-disable @typescript-eslint/no-explicit-any */
-	const crypto = __importStar(crypto$1);
+	const crypto = __importStar(crypto__default);
 	const fs = __importStar(require$$0__default);
 	const os = __importStar(os__default);
 	const utils_1 = requireUtils$5();
@@ -81436,7 +81482,7 @@ function requireBlobUpload () {
 	const storage_blob_1 = /*@__PURE__*/ requireCommonjs$5();
 	const config_1 = requireConfig();
 	const core = __importStar(requireCore$1());
-	const crypto = __importStar(crypto$1);
+	const crypto = __importStar(crypto__default);
 	const stream = __importStar(require$$0$f);
 	const errors_1 = requireErrors$1();
 	function uploadZipToBlobStorage(authenticatedUploadURL, zipUploadStream) {
@@ -126982,7 +127028,7 @@ function requireDownloadArtifact () {
 	Object.defineProperty(downloadArtifact, "__esModule", { value: true });
 	downloadArtifact.downloadArtifactInternal = downloadArtifact.downloadArtifactPublic = downloadArtifact.streamExtractExternal = void 0;
 	const promises_1 = __importDefault(require$$1$b);
-	const crypto = __importStar(crypto$1);
+	const crypto = __importStar(crypto__default);
 	const stream = __importStar(require$$0$f);
 	const github = __importStar(requireGithub());
 	const core = __importStar(requireCore$1());
@@ -133813,7 +133859,10 @@ const GET_BATCH_STATUS_RETRY_DELAY_SECONDS = 1;
 async function waitForBatchCompleted(testBatchId, options) {
     const aivaUrl = options.aivaUrl || DEFAULT_AIVA_URL;
     let batchStatus = await getBatchStatus(aivaUrl, options.apiKey, testBatchId);
+    let pollCount = 0;
     while (isTestBatchRunning(batchStatus)) {
+        const s = batchStatus.results.summary;
+        options.logger?.logInfo(`Running (poll ${++pollCount}): ${s.pending} pending, ${s.passed} passed, ${s.failed} failed, ${s.skipped} skipped`);
         await sleep(options.pollPeriod || DEFAULT_POLL_PERIOD);
         batchStatus = await getBatchStatus(aivaUrl, options.apiKey, testBatchId);
         if (options.verbose)
@@ -133866,8 +133915,15 @@ function logBatchResults(batchResults, logger) {
     const startMs = summary.start;
     const stopMs = summary.stop;
     const duration = startMs !== undefined && stopMs !== undefined ? formatEpochDurationMs(startMs, stopMs) : 'n/a';
-    const logLine = `Total: ${summary.tests}, Passed: ${summary.passed}, Failed: ${summary.failed}, Skipped: ${summary.skipped}, Duration: ${duration}`;
-    logger?.logInfo(logLine);
+    logger?.logInfo(`Total: ${summary.tests}, Passed: ${summary.passed}, Failed: ${summary.failed}, Skipped: ${summary.skipped}, Duration: ${duration}`);
+    if (summary.failed > 0) {
+        const failed = batchResults.results.tests.filter((t) => t.status === 'failed' || t.rawStatus === 'FailedToStart');
+        failed.forEach((t) => {
+            const reason = t.message ? `: ${t.message}` : '';
+            const link = t.extra?.testResultLink;
+            logger?.logInfo(`  ❌ ${t.name} (${t.rawStatus ?? t.status})${reason}${link ? ` More details: ${link}` : ''}`);
+        });
+    }
 }
 function isBatchSuccessful(batchStatus) {
     if (batchStatus?.results?.summary?.failed > 0) {
@@ -133931,7 +133987,15 @@ async function executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents, batchName
         });
     }
     if (!res.ok) {
-        throw new Error(`AIVA batch request failed (${res.status}, ${await res.text()})`);
+        let detail = await res.text();
+        try {
+            const body = JSON.parse(detail);
+            detail = [body.detail ?? body.title, body.hint].filter(Boolean).join(' ');
+        }
+        catch {
+            // not JSON, use raw text
+        }
+        throw new Error(`AIVA batch request failed (${res.status}): ${detail}`);
     }
     console.log(`AIVA batch started`);
     return (await res.json());
@@ -133961,7 +134025,7 @@ async function getBatchStatusRaw(apiUrl, apiKey, batchId, format) {
     }
     if (!res.ok) {
         const errText = (await res.json());
-        throw new Error(`Batch status request failed (${res.status}): ${errText.errors}`);
+        throw new Error(`Batch status request failed (batchId=${batchId}, status=${res.status}): ${JSON.stringify(errText.errors)}`);
     }
     return await res.text();
 }
@@ -134039,11 +134103,17 @@ async function run() {
         },
     };
     const batchInfo = await executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents || undefined, batchName, multilineInputToObject(globalVariableOverridesMultiline), multilineInputToObject(variableOverridesPerTestMultiline), gatewayName, batchId || undefined);
+    setOutput('batchId', batchInfo.testBatchId);
     info(batchId ? `Started test batch from batchId: ${batchId}` : `Started test batch with labels: ${labels}`);
     const report = await waitForBatchCompleted(batchInfo.testBatchId, aivaOptions);
     await writeFile$1(batchStatusFilepath, report.reportContent, 'utf-8');
+    const ctrf = JSON.parse(report.reportContent);
+    const summary = ctrf.results.summary;
+    const batchUrl = summary.extra?.testBatchLink ?? '';
+    setOutput('batchUrl', batchUrl);
+    setOutput('success', String(report.success));
     if (!report.success) {
-        setFailed('AIVA test batch has failed tests or tests that failed to start.');
+        setFailed(`AIVA batch failed: ${summary.failed} failed, ${summary.passed} passed, ${summary.skipped} skipped of ${summary.tests} total.`);
     }
     // Local-action testing crashes when trying to upload artifact, so we want to skip it
     if (process.env.SKIP_ARTIFACT_UPLOAD) {
