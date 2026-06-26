@@ -5,6 +5,7 @@ import { PathLike } from 'node:fs';
 import { executeBatch, waitForBatchCompleted, isInRange, parseLabels } from 'runner';
 import { MIN_POLL_SECONDS, MAX_POLL_SECONDS } from 'runner';
 import type { AIVAOptions } from 'runner';
+import type { CTRFReport } from 'ctrf';
 
 function multilineInputToObject(multilineInput: string[]): object {
     const joined = multilineInput.join('');
@@ -86,14 +87,21 @@ export async function run() {
         gatewayName,
         batchId || undefined,
     );
+    core.setOutput('batchId', batchInfo.testBatchId);
     core.info(batchId ? `Started test batch from batchId: ${batchId}` : `Started test batch with labels: ${labels}`);
 
     const report = await waitForBatchCompleted(batchInfo.testBatchId, aivaOptions);
 
     await writeFile(batchStatusFilepath, report.reportContent, 'utf-8');
 
+    const ctrf = JSON.parse(report.reportContent) as CTRFReport;
+    const summary = ctrf.results.summary;
+    const batchUrl = (summary.extra?.testBatchLink as string | undefined) ?? '';
+    core.setOutput('batchUrl', batchUrl);
+    core.setOutput('success', String(report.success));
+
     if (!report.success) {
-        core.setFailed('AIVA test batch has failed tests or tests that failed to start.');
+        core.setFailed(`AIVA batch failed: ${summary.failed} failed, ${summary.passed} passed, ${summary.skipped} skipped of ${summary.tests} total.`);
     }
 
     // Local-action testing crashes when trying to upload artifact, so we want to skip it

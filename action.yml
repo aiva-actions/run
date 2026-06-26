@@ -60,6 +60,14 @@ inputs:
         required: false
         default: false
 
+outputs:
+    batchId:
+        description: ID of the started test batch
+    batchUrl:
+        description: URL to the batch in the AIVA UI
+    success:
+        description: '''true'' if all tests passed, ''false'' otherwise'
+
 runs:
     using: node24
     main: dist/index.js
