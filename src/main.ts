@@ -28,6 +28,7 @@ export async function run() {
     const pollPeriodSeconds = core.getInput('pollPeriodSeconds', { required: false });
     const verbose = core.getInput('verbose', { required: false });
     const batchStatusFilepath: PathLike = core.getInput('reportFilePath');
+    const artifactName = core.getInput('artifactName', { required: false }) || 'batch-status';
 
     if (!labelsInput && !batchId) {
         core.setFailed('Either labels or batchId must be provided.');
@@ -109,6 +110,6 @@ export async function run() {
         core.warning('Skipping artifact upload: SKIP_ARTIFACT_UPLOAD is set. ' + `Batch CTRF was written to ${String(batchStatusFilepath)}.`);
     } else {
         const artifact = new DefaultArtifactClient();
-        await artifact.uploadArtifact('batch-status', [batchStatusFilepath], '.');
+        await artifact.uploadArtifact(artifactName, [batchStatusFilepath], '.');
     }
 }

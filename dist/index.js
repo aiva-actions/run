@@ -134063,6 +134063,7 @@ async function run() {
     const pollPeriodSeconds = getInput('pollPeriodSeconds', { required: false });
     const verbose = getInput('verbose', { required: false });
     const batchStatusFilepath = getInput('reportFilePath');
+    const artifactName = getInput('artifactName', { required: false }) || 'batch-status';
     if (!labelsInput && !batchId) {
         setFailed('Either labels or batchId must be provided.');
         return;
@@ -134123,7 +134124,7 @@ async function run() {
     }
     else {
         const artifact = new artifactExports.DefaultArtifactClient();
-        await artifact.uploadArtifact('batch-status', [batchStatusFilepath], '.');
+        await artifact.uploadArtifact(artifactName, [batchStatusFilepath], '.');
     }
 }
 

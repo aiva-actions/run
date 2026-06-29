@@ -51,6 +51,11 @@ inputs:
         description: Filepath where CTRF report should be saved
         required: false
         default: './batch-ctrf.json'
+    artifactName:
+        description: Name of the uploaded artifact. Override when multiple invocations
+            run in the same workflow to avoid name conflicts.
+        required: false
+        default: 'batch-status'
     pollPeriodSeconds:
         description: Wait time between retrying API call to check if batch finished
         required: false
