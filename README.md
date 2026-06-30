@@ -58,19 +58,41 @@ steps:
 
 ## Inputs
 
-| Input                      | Required | Description                                                                                                                                 |
-| -------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apiKey`                   | Yes      | AIVA API key, should be added via secrets.                                                                                                  |
-| `labels`                   | Yes      | Semicolon-separated labels that select which tests run (e.g. `smoke;regression`). At least one non-empty label is required after splitting. |
-| `maxNumberOfAgents`        | Yes      | Maximum number of agents the batch may use.                                                                                                 |
-| `batchName`                | No       | Custom batch name.                                                                                                                          |
-| `globalVariableOverrides`  | No       | JSON object applied to all tests in the batch (multiline). Empty input is treated as `{}`.                                                  |
-| `variableOverridesPerTest` | No       | JSON object mapping test IDs to variable overrides (multiline). Empty input is treated as `{}`.                                             |
-| `gatewayName`              | No       | Gateway name used by aiva-node during the test (default: empty).                                                                            |
-| `apiUrl`                   | No       | Batch API URL: POST to start the batch, GET `{url}/{batchId}` for status polling. Default: `https://api.aiva.works/`.                       |
-| `pollPeriodSeconds`        | No       | Seconds to wait between status polls. Must be between 5 and 1800. Default: `10`.                                                            |
-| `reportFilePath`           | No       | Path where the batch run report (CTRF or JUnit) is written and uploaded as the `batch-status` artifact. Default: `./batch-ctrf.json`.       |
-| `verbose`                  | No       | Set to true when additional logs should be logged                                                                                           |
+| Input                      | Required | Description                                                                                                                                           |
+| -------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apiKey`                   | Yes      | AIVA API key, should be added via secrets.                                                                                                            |
+| `labels`                   | No       | Semicolon-separated labels that select which tests run (e.g. `smoke;regression`). Required unless `batchId` is provided.                              |
+| `batchId`                  | No       | Run a specific existing batch by its ID instead of selecting tests by labels. Mutually exclusive with `labels`.                                       |
+| `maxNumberOfAgents`        | No       | Maximum number of agents the batch may use.                                                                                                           |
+| `batchName`                | No       | Custom batch name.                                                                                                                                    |
+| `globalVariableOverrides`  | No       | JSON object applied to all tests in the batch (multiline). Empty input is treated as `{}`.                                                            |
+| `variableOverridesPerTest` | No       | JSON object mapping test IDs to variable overrides (multiline). Empty input is treated as `{}`.                                                       |
+| `gatewayName`              | No       | Gateway name used by aiva-node during the test (default: empty).                                                                                      |
+| `apiUrl`                   | No       | Batch API URL: POST to start the batch, GET `{url}/{batchId}` for status polling. Default: `https://api.aiva.works/`.                                 |
+| `pollPeriodSeconds`        | No       | Seconds to wait between status polls. Must be between 5 and 1800. Default: `10`.                                                                      |
+| `reportFilePath`           | No       | Path where the batch run report (CTRF or JUnit) is written. Default: `./batch-ctrf.json`.                                                             |
+| `artifactName`             | No       | Name of the uploaded workflow artifact. Override when multiple invocations run in the same workflow to avoid name conflicts. Default: `batch-status`. |
+| `verbose`                  | No       | Set to `true` to log additional debug output.                                                                                                         |
+
+## Outputs
+
+| Output     | Description                                    |
+| ---------- | ---------------------------------------------- |
+| `batchId`  | ID of the started test batch.                  |
+| `batchUrl` | URL to the batch in the AIVA.                  |
+| `success`  | `true` if all tests passed, `false` otherwise. |
+
+## Versioning
+
+This action follows [semantic versioning](https://semver.org/). Releases are tagged as `vMAJOR.MINOR.PATCH` (e.g. `v1.1.0`). A floating major tag (e.g. `v1`) is kept in sync with the latest non-breaking release so you get bug fixes and new inputs automatically without updating your workflow file.
+
+| Pin style             | What you get                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------- |
+| `uses: ...run@v1`     | Latest `1.x.x` — recommended; automatic minor/patch updates.                                |
+| `uses: ...run@v1.1.0` | Exact release — fully reproducible, opt-in updates.                                         |
+| `uses: ...run@main`   | Always the newest release (might contain breaking changes if new major version is released) |
+
+**Breaking changes** (removed inputs, changed behavior) bump the major version to `v2`, `v3`, etc. Minor additions (new optional inputs, new outputs) and bug fixes stay within the current major.
 
 ## Development
 
