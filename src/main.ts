@@ -27,6 +27,7 @@ export async function run() {
     const pollPeriodSeconds = core.getInput('pollPeriodSeconds', { required: false });
     const verbose = core.getInput('verbose', { required: false });
     const batchStatusFilepath: PathLike = core.getInput('reportFilePath');
+    const artifactName = core.getInput('artifactName', { required: false }) || 'batch-status';
 
     if (!labelsInput && !batchId) {
         core.setFailed('Either labels or batchId must be provided.');
@@ -86,14 +87,20 @@ export async function run() {
         gatewayName,
         batchId || undefined,
     );
+    core.setOutput('batchId', batchInfo.testBatchId);
     core.info(batchId ? `Started test batch from batchId: ${batchId}` : `Started test batch with labels: ${labels}`);
 
     const report = await waitForBatchCompleted(batchInfo.testBatchId, aivaOptions);
 
     await writeFile(batchStatusFilepath, report.reportContent, 'utf-8');
 
+    const summary = report.parsedReport.results.summary;
+    const batchUrl = (summary.extra?.testBatchLink as string | undefined) ?? '';
+    core.setOutput('batchUrl', batchUrl);
+    core.setOutput('success', String(report.success));
+
     if (!report.success) {
-        core.setFailed('AIVA test batch has failed tests or tests that failed to start.');
+        core.setFailed(`AIVA batch failed: ${summary.failed} failed, ${summary.passed} passed, ${summary.skipped} skipped of ${summary.tests} total.`);
     }
 
     // Local-action testing crashes when trying to upload artifact, so we want to skip it
@@ -101,6 +108,6 @@ export async function run() {
         core.warning('Skipping artifact upload: SKIP_ARTIFACT_UPLOAD is set. ' + `Batch CTRF was written to ${String(batchStatusFilepath)}.`);
     } else {
         const artifact = new DefaultArtifactClient();
-        await artifact.uploadArtifact('batch-status', [batchStatusFilepath], '.');
+        await artifact.uploadArtifact(artifactName, [batchStatusFilepath], '.');
     }
 }

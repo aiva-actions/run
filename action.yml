@@ -51,6 +51,11 @@ inputs:
         description: Filepath where CTRF report should be saved
         required: false
         default: './batch-ctrf.json'
+    artifactName:
+        description: Name of the uploaded artifact. Override when multiple invocations
+            run in the same workflow to avoid name conflicts.
+        required: false
+        default: 'batch-status'
     pollPeriodSeconds:
         description: Wait time between retrying API call to check if batch finished
         required: false
@@ -59,6 +64,14 @@ inputs:
         description: Set to true when additional output should be logged
         required: false
         default: false
+
+outputs:
+    batchId:
+        description: ID of the started test batch
+    batchUrl:
+        description: URL to the batch in the AIVA UI
+    success:
+        description: "'true' if all tests passed, 'false' otherwise"
 
 runs:
     using: node24
