@@ -5,7 +5,6 @@ import { PathLike } from 'node:fs';
 import { executeBatch, waitForBatchCompleted, isInRange, parseLabels } from 'runner';
 import { MIN_POLL_SECONDS, MAX_POLL_SECONDS } from 'runner';
 import type { AIVAOptions } from 'runner';
-import type { CTRFReport } from 'ctrf';
 
 function multilineInputToObject(multilineInput: string[]): object {
     const joined = multilineInput.join('');
@@ -95,8 +94,7 @@ export async function run() {
 
     await writeFile(batchStatusFilepath, report.reportContent, 'utf-8');
 
-    const ctrf = JSON.parse(report.reportContent) as CTRFReport;
-    const summary = ctrf.results.summary;
+    const summary = report.parsedReport.results.summary;
     const batchUrl = (summary.extra?.testBatchLink as string | undefined) ?? '';
     core.setOutput('batchUrl', batchUrl);
     core.setOutput('success', String(report.success));

@@ -134286,7 +134286,7 @@ async function waitForBatchCompleted(testBatchId, options) {
     {
         batchResult = JSON.stringify(batchStatus, null, 4);
     }
-    return { success: isBatchSuccessful(batchStatus), reportContent: batchResult };
+    return { success: isBatchSuccessful(batchStatus), reportContent: batchResult, parsedReport: batchStatus };
 }
 /** @param {string} labelsInput
  * @param dummyPrevious - dummyPrevious argument is here for compatibility with commander option parsing. Without it
@@ -134330,8 +134330,8 @@ function logBatchResults(batchResults, logger) {
     const duration = startMs !== undefined && stopMs !== undefined ? formatEpochDurationMs(startMs, stopMs) : 'n/a';
     logger?.logInfo(`Total: ${summary.tests}, Passed: ${summary.passed}, Failed: ${summary.failed}, Skipped: ${summary.skipped}, Duration: ${duration}`);
 }
+const TERMINAL_STATUSES = new Set(['passed', 'failed', 'skipped']);
 function logTestDeltas(batchStatus, previousStatuses, logger) {
-    const TERMINAL_STATUSES = new Set(['passed', 'failed', 'skipped']);
     const s = batchStatus.results.summary;
     logger?.logInfo(`Polling: ${s.pending} pending, ${s.passed} passed, ${s.failed} failed, ${s.skipped} skipped`);
     for (const test of batchStatus.results.tests) {
@@ -134533,8 +134533,7 @@ async function run() {
     info(batchId ? `Started test batch from batchId: ${batchId}` : `Started test batch with labels: ${labels}`);
     const report = await waitForBatchCompleted(batchInfo.testBatchId, aivaOptions);
     await writeFile$1(batchStatusFilepath, report.reportContent, 'utf-8');
-    const ctrf = JSON.parse(report.reportContent);
-    const summary = ctrf.results.summary;
+    const summary = report.parsedReport.results.summary;
     const batchUrl = summary.extra?.testBatchLink ?? '';
     setOutput('batchUrl', batchUrl);
     setOutput('success', String(report.success));
