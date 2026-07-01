@@ -84,7 +84,10 @@ steps:
 
 ## Versioning
 
-This action follows [semantic versioning](https://semver.org/). Releases are tagged as `vMAJOR.MINOR.PATCH` (e.g. `v1.1.0`). A floating major tag (e.g. `v1`) is kept in sync with the latest non-breaking release so you get bug fixes and new inputs automatically without updating your workflow file.
+This action follows [semantic versioning](https://semver.org/). Releases are
+tagged as `vMAJOR.MINOR.PATCH` (e.g. `v1.1.0`). A floating major tag
+(e.g. `v1`) is kept in sync with the latest non-breaking release so you get
+bugfixes and new inputs automatically without updating your workflow file.
 
 | Pin style             | What you get                                                                                |
 | --------------------- | ------------------------------------------------------------------------------------------- |
@@ -92,7 +95,9 @@ This action follows [semantic versioning](https://semver.org/). Releases are tag
 | `uses: ...run@v1.1.0` | Exact release — fully reproducible, opt-in updates.                                         |
 | `uses: ...run@main`   | Always the newest release (might contain breaking changes if new major version is released) |
 
-**Breaking changes** (removed inputs, changed behavior) bump the major version to `v2`, `v3`, etc. Minor additions (new optional inputs, new outputs) and bug fixes stay within the current major.
+**Breaking changes** (removed inputs, changed behavior) bump the major version
+to `v2`, `v3`, etc. Minor additions (new optional inputs, new outputs) and
+bugfixes stay within the current major.
 
 ## Development
 
