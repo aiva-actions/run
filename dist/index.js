@@ -134332,16 +134332,24 @@ function logBatchResults(batchResults, logger) {
 }
 const TERMINAL_STATUSES = new Set(['passed', 'failed', 'skipped']);
 function logTestDeltas(batchStatus, previousStatuses, logger) {
+    const tests = batchStatus.results.tests;
+    const enqueued = tests.filter((t) => t.rawStatus === 'Enqueued').length;
+    const running = tests.filter((t) => t.rawStatus === 'Running').length;
     const s = batchStatus.results.summary;
-    logger?.logInfo(`Polling: ${s.pending} pending, ${s.passed} passed, ${s.failed} failed, ${s.skipped} skipped`);
-    for (const test of batchStatus.results.tests) {
+    logger?.logInfo(`Polling: ${enqueued} enqueued, ${running} running, ${s.passed} passed, ${s.failed} failed, ${s.skipped} skipped`);
+    for (const test of tests) {
         const prev = previousStatuses.get(test.name);
         const current = test.rawStatus ?? test.status;
-        if (prev !== current && TERMINAL_STATUSES.has(test.status)) {
-            const icon = test.status === 'passed' ? '✅' : test.status === 'skipped' ? '⏭️' : '❌';
-            const reason = test.message ? `: ${test.message}` : '';
-            const link = test.extra?.testResultLink;
-            logger?.logInfo(`  ${icon} ${test.name} (${current})${reason}${link ? ` — ${link}` : ''}`);
+        if (prev !== current) {
+            if (current === 'Running') {
+                logger?.logInfo(`  ▶️ ${test.name} started`);
+            }
+            else if (TERMINAL_STATUSES.has(test.status)) {
+                const icon = test.status === 'passed' ? '✅' : test.status === 'skipped' ? '⏭️' : '❌';
+                const reason = test.message ? `: ${test.message}` : '';
+                const link = test.extra?.testResultLink;
+                logger?.logInfo(`  ${icon} ${test.name} (${current})${reason}${link ? ` — ${link}` : ''}`);
+            }
         }
         previousStatuses.set(test.name, current);
     }
