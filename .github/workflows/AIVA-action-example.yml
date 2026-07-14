@@ -27,7 +27,7 @@ jobs:
 
             - name: Generate CTRF summary
               id: summary
-              uses: ctrf-io/github-test-reporter@v1.0.28
+              uses: ctrf-io/github-test-reporter@v1.1.0
               with:
                   report-path: './batch-ctrf.json'
                   template-path: 'summary-template.hbs'
