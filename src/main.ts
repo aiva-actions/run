@@ -42,9 +42,6 @@ export async function run() {
         if (maxNumberOfAgents) {
             disallowedOverrides.push('maxNumberOfAgents');
         }
-        if (globalVariableOverridesMultiline.join('')) {
-            disallowedOverrides.push('globalVariableOverrides');
-        }
         if (variableOverridesPerTestMultiline.join('')) {
             disallowedOverrides.push('variableOverridesPerTest');
         }
@@ -52,7 +49,9 @@ export async function run() {
             disallowedOverrides.push('gatewayName');
         }
         if (disallowedOverrides.length > 0) {
-            core.setFailed(`When batchId is provided, these inputs cannot be overridden: ${disallowedOverrides.join(', ')}. Only batchName may be overridden.`);
+            core.setFailed(
+                `When batchId is provided, these inputs cannot be overridden: ${disallowedOverrides.join(', ')}. Only batchName and globalVariableOverrides may be overridden.`,
+            );
             return;
         }
     }

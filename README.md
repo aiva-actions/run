@@ -58,21 +58,21 @@ steps:
 
 ## Inputs
 
-| Input                      | Required | Description                                                                                                                                           |
-| -------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apiKey`                   | Yes      | AIVA API key, should be added via secrets.                                                                                                            |
-| `labels`                   | No       | Semicolon-separated labels that select which tests run (e.g. `smoke;regression`). Required unless `batchId` is provided.                              |
-| `batchId`                  | No       | Run a specific existing batch by its ID instead of selecting tests by labels. Mutually exclusive with `labels`.                                       |
-| `maxNumberOfAgents`        | No       | Maximum number of agents the batch may use.                                                                                                           |
-| `batchName`                | No       | Custom batch name.                                                                                                                                    |
-| `globalVariableOverrides`  | No       | JSON object applied to all tests in the batch (multiline). Empty input is treated as `{}`.                                                            |
-| `variableOverridesPerTest` | No       | JSON object mapping test IDs to variable overrides (multiline). Empty input is treated as `{}`.                                                       |
-| `gatewayName`              | No       | Gateway name used by aiva-node during the test (default: empty).                                                                                      |
-| `apiUrl`                   | No       | Batch API URL: POST to start the batch, GET `{url}/{batchId}` for status polling. Default: `https://api.aiva.works/`.                                 |
-| `pollPeriodSeconds`        | No       | Seconds to wait between status polls. Must be between 5 and 1800. Default: `10`.                                                                      |
-| `reportFilePath`           | No       | Path where the batch run report (CTRF or JUnit) is written. Default: `./batch-ctrf.json`.                                                             |
-| `artifactName`             | No       | Name of the uploaded workflow artifact. Override when multiple invocations run in the same workflow to avoid name conflicts. Default: `batch-status`. |
-| `verbose`                  | No       | Set to `true` to log additional debug output.                                                                                                         |
+| Input                      | Required | Description                                                                                                                                            |
+| -------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apiKey`                   | Yes      | AIVA API key, should be added via secrets.                                                                                                             |
+| `labels`                   | No       | Semicolon-separated labels that select which tests run (e.g. `smoke;regression`). Required unless `batchId` is provided.                               |
+| `batchId`                  | No       | Run a specific existing batch by its ID instead of selecting tests by labels. Mutually exclusive with `labels`.                                        |
+| `maxNumberOfAgents`        | No       | Maximum number of agents the batch may use.                                                                                                            |
+| `batchName`                | No       | Custom batch name.                                                                                                                                     |
+| `globalVariableOverrides`  | No       | JSON object applied to all tests in the batch (multiline). Empty input is treated as `{}`. With `batchId` it is merged over the batch's own overrides. |
+| `variableOverridesPerTest` | No       | JSON object mapping test IDs to variable overrides (multiline). Empty input is treated as `{}`.                                                        |
+| `gatewayName`              | No       | Gateway name used by aiva-node during the test (default: empty).                                                                                       |
+| `apiUrl`                   | No       | Batch API URL: POST to start the batch, GET `{url}/{batchId}` for status polling. Default: `https://api.aiva.works/`.                                  |
+| `pollPeriodSeconds`        | No       | Seconds to wait between status polls. Must be between 5 and 1800. Default: `10`.                                                                       |
+| `reportFilePath`           | No       | Path where the batch run report (CTRF or JUnit) is written. Default: `./batch-ctrf.json`.                                                              |
+| `artifactName`             | No       | Name of the uploaded workflow artifact. Override when multiple invocations run in the same workflow to avoid name conflicts. Default: `batch-status`.  |
+| `verbose`                  | No       | Set to `true` to log additional debug output.                                                                                                          |
 
 ## Outputs
 
