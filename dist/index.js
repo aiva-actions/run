@@ -134864,9 +134864,27 @@ async function getBatchStatus(aivaUrl, apiKey, batchId) {
     return JSON.parse(batchStatus);
 }
 
-function multilineInputToObject(multilineInput) {
+class InvalidJsonInputError extends Error {
+    constructor(inputName, detail) {
+        super(`Input '${inputName}' ${detail}`);
+    }
+}
+function multilineInputToObject(inputName, multilineInput) {
     const joined = multilineInput.join('');
-    return joined == '' ? {} : JSON.parse(joined);
+    if (joined == '') {
+        return {};
+    }
+    let parsed;
+    try {
+        parsed = JSON.parse(joined);
+    }
+    catch (e) {
+        throw new InvalidJsonInputError(inputName, `is not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
+    }
+    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        throw new InvalidJsonInputError(inputName, 'must be a JSON object, e.g. {"username": "testuser"}');
+    }
+    return parsed;
 }
 /**
  * Main function of the github action.
@@ -134923,7 +134941,20 @@ async function run() {
             logInfo: (message) => info(message),
         },
     };
-    const batchInfo = await executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents || undefined, batchName, multilineInputToObject(globalVariableOverridesMultiline), multilineInputToObject(variableOverridesPerTestMultiline), gatewayName, batchId || undefined);
+    let globalVariableOverrides;
+    let variableOverridesPerTest;
+    try {
+        globalVariableOverrides = multilineInputToObject('globalVariableOverrides', globalVariableOverridesMultiline);
+        variableOverridesPerTest = multilineInputToObject('variableOverridesPerTest', variableOverridesPerTestMultiline);
+    }
+    catch (e) {
+        if (e instanceof InvalidJsonInputError) {
+            setFailed(e.message);
+            return;
+        }
+        throw e;
+    }
+    const batchInfo = await executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents || undefined, batchName, globalVariableOverrides, variableOverridesPerTest, gatewayName, batchId || undefined);
     setOutput('batchId', batchInfo.testBatchId);
     info(batchId ? `Started test batch from batchId: ${batchId}` : `Started test batch with labels: ${labels}`);
     const report = await waitForBatchCompleted(batchInfo.testBatchId, aivaOptions);
