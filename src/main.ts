@@ -6,9 +6,21 @@ import { executeBatch, waitForBatchCompleted, isInRange, parseLabels } from 'run
 import { MIN_POLL_SECONDS, MAX_POLL_SECONDS } from 'runner';
 import type { AIVAOptions } from 'runner';
 
-function multilineInputToObject(multilineInput: string[]): object {
+function multilineInputToObject(inputName: string, multilineInput: string[]): object {
     const joined = multilineInput.join('');
-    return joined == '' ? {} : JSON.parse(joined);
+    if (joined == '') {
+        return {};
+    }
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(joined);
+    } catch (e) {
+        throw new Error(`Input '${inputName}' is not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
+    }
+    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        throw new Error(`Input '${inputName}' must be a JSON object, e.g. {"username": "testuser"}`);
+    }
+    return parsed;
 }
 
 /**
@@ -42,9 +54,6 @@ export async function run() {
         if (maxNumberOfAgents) {
             disallowedOverrides.push('maxNumberOfAgents');
         }
-        if (globalVariableOverridesMultiline.join('')) {
-            disallowedOverrides.push('globalVariableOverrides');
-        }
         if (variableOverridesPerTestMultiline.join('')) {
             disallowedOverrides.push('variableOverridesPerTest');
         }
@@ -52,7 +61,9 @@ export async function run() {
             disallowedOverrides.push('gatewayName');
         }
         if (disallowedOverrides.length > 0) {
-            core.setFailed(`When batchId is provided, these inputs cannot be overridden: ${disallowedOverrides.join(', ')}. Only batchName may be overridden.`);
+            core.setFailed(
+                `When batchId is provided, these inputs cannot be overridden: ${disallowedOverrides.join(', ')}. Only batchName and globalVariableOverrides may be overridden.`,
+            );
             return;
         }
     }
@@ -82,8 +93,8 @@ export async function run() {
         labels,
         maxNumberOfAgents || undefined,
         batchName,
-        multilineInputToObject(globalVariableOverridesMultiline),
-        multilineInputToObject(variableOverridesPerTestMultiline),
+        multilineInputToObject('globalVariableOverrides', globalVariableOverridesMultiline),
+        multilineInputToObject('variableOverridesPerTest', variableOverridesPerTestMultiline),
         gatewayName,
         batchId || undefined,
     );
