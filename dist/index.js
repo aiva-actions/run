@@ -134864,11 +134864,6 @@ async function getBatchStatus(aivaUrl, apiKey, batchId) {
     return JSON.parse(batchStatus);
 }
 
-class InvalidJsonInputError extends Error {
-    constructor(inputName, detail) {
-        super(`Input '${inputName}' ${detail}`);
-    }
-}
 function multilineInputToObject(inputName, multilineInput) {
     const joined = multilineInput.join('');
     if (joined == '') {
@@ -134879,10 +134874,10 @@ function multilineInputToObject(inputName, multilineInput) {
         parsed = JSON.parse(joined);
     }
     catch (e) {
-        throw new InvalidJsonInputError(inputName, `is not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
+        throw new Error(`Input '${inputName}' is not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
     }
     if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-        throw new InvalidJsonInputError(inputName, 'must be a JSON object, e.g. {"username": "testuser"}');
+        throw new Error(`Input '${inputName}' must be a JSON object, e.g. {"username": "testuser"}`);
     }
     return parsed;
 }
@@ -134941,20 +134936,7 @@ async function run() {
             logInfo: (message) => info(message),
         },
     };
-    let globalVariableOverrides;
-    let variableOverridesPerTest;
-    try {
-        globalVariableOverrides = multilineInputToObject('globalVariableOverrides', globalVariableOverridesMultiline);
-        variableOverridesPerTest = multilineInputToObject('variableOverridesPerTest', variableOverridesPerTestMultiline);
-    }
-    catch (e) {
-        if (e instanceof InvalidJsonInputError) {
-            setFailed(e.message);
-            return;
-        }
-        throw e;
-    }
-    const batchInfo = await executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents || undefined, batchName, globalVariableOverrides, variableOverridesPerTest, gatewayName, batchId || undefined);
+    const batchInfo = await executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents || undefined, batchName, multilineInputToObject('globalVariableOverrides', globalVariableOverridesMultiline), multilineInputToObject('variableOverridesPerTest', variableOverridesPerTestMultiline), gatewayName, batchId || undefined);
     setOutput('batchId', batchInfo.testBatchId);
     info(batchId ? `Started test batch from batchId: ${batchId}` : `Started test batch with labels: ${labels}`);
     const report = await waitForBatchCompleted(batchInfo.testBatchId, aivaOptions);

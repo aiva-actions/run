@@ -6,12 +6,6 @@ import { executeBatch, waitForBatchCompleted, isInRange, parseLabels } from 'run
 import { MIN_POLL_SECONDS, MAX_POLL_SECONDS } from 'runner';
 import type { AIVAOptions } from 'runner';
 
-class InvalidJsonInputError extends Error {
-    constructor(inputName: string, detail: string) {
-        super(`Input '${inputName}' ${detail}`);
-    }
-}
-
 function multilineInputToObject(inputName: string, multilineInput: string[]): object {
     const joined = multilineInput.join('');
     if (joined == '') {
@@ -21,10 +15,10 @@ function multilineInputToObject(inputName: string, multilineInput: string[]): ob
     try {
         parsed = JSON.parse(joined);
     } catch (e) {
-        throw new InvalidJsonInputError(inputName, `is not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
+        throw new Error(`Input '${inputName}' is not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
     }
     if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-        throw new InvalidJsonInputError(inputName, 'must be a JSON object, e.g. {"username": "testuser"}');
+        throw new Error(`Input '${inputName}' must be a JSON object, e.g. {"username": "testuser"}`);
     }
     return parsed;
 }
@@ -93,27 +87,14 @@ export async function run() {
         },
     };
 
-    let globalVariableOverrides: object;
-    let variableOverridesPerTest: object;
-    try {
-        globalVariableOverrides = multilineInputToObject('globalVariableOverrides', globalVariableOverridesMultiline);
-        variableOverridesPerTest = multilineInputToObject('variableOverridesPerTest', variableOverridesPerTestMultiline);
-    } catch (e) {
-        if (e instanceof InvalidJsonInputError) {
-            core.setFailed(e.message);
-            return;
-        }
-        throw e;
-    }
-
     const batchInfo = await executeBatch(
         apiUrl,
         apiKey,
         labels,
         maxNumberOfAgents || undefined,
         batchName,
-        globalVariableOverrides,
-        variableOverridesPerTest,
+        multilineInputToObject('globalVariableOverrides', globalVariableOverridesMultiline),
+        multilineInputToObject('variableOverridesPerTest', variableOverridesPerTestMultiline),
         gatewayName,
         batchId || undefined,
     );
