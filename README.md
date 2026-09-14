@@ -2,11 +2,13 @@
 
 A [GitHub Action](https://docs.github.com/en/actions) written in TypeScript that
 starts an automated test batch in [AIVA](https://app.aiva.works/) and waits
-until it finishes. It uses the AIVA v2 REST API — `POST /v2/batches/{batchId}/trigger`
-for a defined batch or `POST /v2/batch-executions` for an ad-hoc label-based run,
-then polls `GET /v2/batch-executions/{executionId}`. API details are documented at
+until it finishes. It uses the AIVA v2 REST API:
+`POST /v2/batches/{batchId}/trigger` for a defined batch or
+`POST /v2/batch-executions` for an ad-hoc label-based run, then polls
+`GET /v2/batch-executions/{executionId}`. API details are documented at
 [Trigger a defined batch](https://app.aiva.works/docs/api/batches-trigger-batch-v-2)
-and [Run an ad-hoc batch](https://app.aiva.works/docs/api/batch-executions-run-batch-execution-v-2).
+and
+[Run an ad-hoc batch](https://app.aiva.works/docs/api/batch-executions-run-batch-execution-v-2).
 
 ## What it does
 
