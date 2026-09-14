@@ -1,6 +1,7 @@
 name: AIVA batch test run
-description: Start an AIVA test batch via POST /v1/batches (see
-    https://app.aiva.works/docs/api/batches-run-batch)
+description: Start an AIVA test batch via the v2 batch API — POST
+    /v2/batches/{batchId}/trigger for a defined batch, or POST
+    /v2/batch-executions for an ad-hoc label-based run
 author: YSoft AIVA team
 
 branding:

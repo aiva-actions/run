@@ -134660,13 +134660,13 @@ const DEFAULT_AIVA_URL = 'https://app.aiva.works/';
 const DEFAULT_POLL_PERIOD = 10;
 const GET_BATCH_STATUS_RETRY_DELAY_SECONDS = 1;
 
-async function waitForBatchCompleted(testBatchId, options) {
+async function waitForBatchCompleted(executionId, options) {
     const aivaUrl = options.aivaUrl || DEFAULT_AIVA_URL;
-    let batchStatus = await getBatchStatus(aivaUrl, options.apiKey, testBatchId);
+    let batchStatus = await getBatchStatus(aivaUrl, options.apiKey, executionId);
     const previousStatuses = new Map();
     while (isTestBatchRunning(batchStatus)) {
         await sleep(options.pollPeriod || DEFAULT_POLL_PERIOD);
-        batchStatus = await getBatchStatus(aivaUrl, options.apiKey, testBatchId);
+        batchStatus = await getBatchStatus(aivaUrl, options.apiKey, executionId);
         if (options.verbose)
             options.logger?.logDebug(JSON.stringify(batchStatus, null, 4));
         logTestDeltas(batchStatus, previousStatuses, options.logger);
@@ -134789,28 +134789,34 @@ async function extractErrorDetail(res) {
  * @param {object} globalVariableOverrides
  * @param {object} variableOverridesPerTest
  * @param {string} gatewayName
- * @returns object batchID of the newly created batch in AIVA
+ * @returns object holding the ID of the started batch execution
  */
 async function executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents, batchName, globalVariableOverrides, variableOverridesPerTest, gatewayName, batchId) {
     console.log('Executing test batch with following parameters');
+    // A batch id triggers an existing batch (overrides only); otherwise an ad-hoc batch is composed from labels.
+    const { url, body } = batchId
+        ? { url: new URL(`/v2/batches/${batchId}/trigger`, apiUrl), body: { globalVariableOverrides } }
+        : {
+            url: new URL('/v2/batch-executions', apiUrl),
+            body: {
+                name: batchName,
+                labels,
+                maxNumberOfAgents: maxNumberOfAgents !== undefined ? Number(maxNumberOfAgents) : undefined,
+                globalVariableOverrides,
+                variableOverridesPerTest,
+                gatewayName,
+            },
+        };
     let res;
     try {
-        res = await fetch(new URL('/v1/batches', apiUrl), {
+        res = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
                 'X-API-Key': apiKey,
             },
-            body: JSON.stringify({
-                name: batchName,
-                labels: labels,
-                maxNumberOfAgents: maxNumberOfAgents,
-                globalVariablesOverrides: globalVariableOverrides,
-                variablesOverridesPerTest: variableOverridesPerTest,
-                gatewayName: gatewayName,
-                batchId: batchId,
-            }),
+            body: JSON.stringify(body),
         });
     }
     catch (err) {
@@ -134827,14 +134833,16 @@ async function executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents, batchName
 /**
  * @param {string} apiUrl
  * @param {string} apiKey
- * @param {string} batchId
+ * @param {string} executionId
  * @param format
  * @returns {CTRFReport} object in CTRFReport format
  */
-async function getBatchStatusRaw(apiUrl, apiKey, batchId, format) {
+async function getBatchStatusRaw(apiUrl, apiKey, executionId, format) {
+    // v2 fixes the report format by path; the Accept header is no longer negotiated.
+    const reportPath = 'ctrf';
     let res;
     try {
-        res = await fetch(new URL(`/v1/batches/${batchId}`, apiUrl), {
+        res = await fetch(new URL(`/v2/batch-executions/${executionId}/${reportPath}`, apiUrl), {
             method: 'GET',
             headers: {
                 Accept: format == 'junit' ? 'application/xml' : 'application/json',
@@ -134848,18 +134856,18 @@ async function getBatchStatusRaw(apiUrl, apiKey, batchId, format) {
         });
     }
     if (!res.ok) {
-        throw new Error(`Batch status request failed (batchId=${batchId}, status=${res.status}): ${await extractErrorDetail(res)}`);
+        throw new Error(`Batch status request failed (executionId=${executionId}, status=${res.status}): ${await extractErrorDetail(res)}`);
     }
     return await res.text();
 }
-async function getBatchStatus(aivaUrl, apiKey, batchId) {
+async function getBatchStatus(aivaUrl, apiKey, executionId) {
     let batchStatus;
     try {
-        batchStatus = await getBatchStatusRaw(aivaUrl, apiKey, batchId, 'ctrf');
+        batchStatus = await getBatchStatusRaw(aivaUrl, apiKey, executionId, 'ctrf');
     }
     catch {
         await sleep(GET_BATCH_STATUS_RETRY_DELAY_SECONDS);
-        batchStatus = await getBatchStatusRaw(aivaUrl, apiKey, batchId, 'ctrf');
+        batchStatus = await getBatchStatusRaw(aivaUrl, apiKey, executionId, 'ctrf');
     }
     return JSON.parse(batchStatus);
 }
@@ -134937,9 +134945,9 @@ async function run() {
         },
     };
     const batchInfo = await executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents || undefined, batchName, multilineInputToObject('globalVariableOverrides', globalVariableOverridesMultiline), multilineInputToObject('variableOverridesPerTest', variableOverridesPerTestMultiline), gatewayName, batchId || undefined);
-    setOutput('batchId', batchInfo.testBatchId);
+    setOutput('batchId', batchInfo.executionId);
     info(batchId ? `Started test batch from batchId: ${batchId}` : `Started test batch with labels: ${labels}`);
-    const report = await waitForBatchCompleted(batchInfo.testBatchId, aivaOptions);
+    const report = await waitForBatchCompleted(batchInfo.executionId, aivaOptions);
     await writeFile$1(batchStatusFilepath, report.reportContent, 'utf-8');
     const summary = report.parsedReport.results.summary;
     const batchUrl = summary.extra?.testBatchLink ?? '';

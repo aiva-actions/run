@@ -98,10 +98,10 @@ export async function run() {
         gatewayName,
         batchId || undefined,
     );
-    core.setOutput('batchId', batchInfo.testBatchId);
+    core.setOutput('batchId', batchInfo.executionId);
     core.info(batchId ? `Started test batch from batchId: ${batchId}` : `Started test batch with labels: ${labels}`);
 
-    const report = await waitForBatchCompleted(batchInfo.testBatchId, aivaOptions);
+    const report = await waitForBatchCompleted(batchInfo.executionId, aivaOptions);
 
     await writeFile(batchStatusFilepath, report.reportContent, 'utf-8');
 
