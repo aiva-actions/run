@@ -39,7 +39,7 @@
   "dependencies": {
     "@actions/core": "^3.0.0",
     "node": "^24.4.0",
-    "runner": "github:aiva-actions/runner#v1"
+    "runner": "github:aiva-actions/runner#feature/AIVA-7052-migrate-to-v2-batch-api"
   },
   "devDependencies": {
     "@eslint/compat": "^2.0.2",

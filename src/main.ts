@@ -2,7 +2,7 @@ import * as core from '@actions/core';
 import { writeFile } from 'node:fs/promises';
 import { DefaultArtifactClient } from '@actions/artifact';
 import { PathLike } from 'node:fs';
-import { executeBatch, waitForBatchCompleted, isInRange, parseLabels } from 'runner';
+import { triggerBatch, waitForBatchCompleted, isInRange } from 'runner';
 import { MIN_POLL_SECONDS, MAX_POLL_SECONDS } from 'runner';
 import type { AIVAOptions } from 'runner';
 
@@ -15,7 +15,7 @@ function multilineInputToObject(inputName: string, multilineInput: string[]): ob
     try {
         parsed = JSON.parse(joined);
     } catch (e) {
-        throw new Error(`Input '${inputName}' is not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
+        throw new Error(`Input '${inputName}' is not valid JSON: ${e instanceof Error ? e.message : String(e)}`, { cause: e });
     }
     if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
         throw new Error(`Input '${inputName}' must be a JSON object, e.g. {"username": "testuser"}`);
@@ -28,47 +28,13 @@ function multilineInputToObject(inputName: string, multilineInput: string[]): ob
  */
 export async function run() {
     const apiKey = core.getInput('apiKey', { required: true });
-    const labelsInput = core.getInput('labels', { required: false });
-    const batchId = core.getInput('batchId', { required: false });
-    const maxNumberOfAgents = core.getInput('maxNumberOfAgents', { required: false });
-    const batchName = core.getInput('batchName', { required: false });
+    const batchId = core.getInput('batchId', { required: true });
     const globalVariableOverridesMultiline = core.getMultilineInput('globalVariableOverrides', { required: false });
-    const variableOverridesPerTestMultiline = core.getMultilineInput('variableOverridesPerTest', { required: false });
-    const gatewayName = core.getInput('gatewayName', { required: false });
     const apiUrl = core.getInput('apiUrl', { required: false });
     const pollPeriodSeconds = core.getInput('pollPeriodSeconds', { required: false });
     const verbose = core.getInput('verbose', { required: false });
     const batchStatusFilepath: PathLike = core.getInput('reportFilePath');
     const artifactName = core.getInput('artifactName', { required: false }) || 'batch-status';
-
-    if (!labelsInput && !batchId) {
-        core.setFailed('Either labels or batchId must be provided.');
-        return;
-    }
-
-    if (batchId) {
-        const disallowedOverrides: string[] = [];
-        if (labelsInput) {
-            disallowedOverrides.push('labels');
-        }
-        if (maxNumberOfAgents) {
-            disallowedOverrides.push('maxNumberOfAgents');
-        }
-        if (variableOverridesPerTestMultiline.join('')) {
-            disallowedOverrides.push('variableOverridesPerTest');
-        }
-        if (gatewayName) {
-            disallowedOverrides.push('gatewayName');
-        }
-        if (disallowedOverrides.length > 0) {
-            core.setFailed(
-                `When batchId is provided, these inputs cannot be overridden: ${disallowedOverrides.join(', ')}. Only batchName and globalVariableOverrides may be overridden.`,
-            );
-            return;
-        }
-    }
-
-    const labels = labelsInput ? parseLabels(labelsInput, []) : undefined;
 
     if (!isInRange(parseInt(pollPeriodSeconds), MIN_POLL_SECONDS, MAX_POLL_SECONDS)) {
         core.setFailed(`Poll period ${pollPeriodSeconds} is invalid. Value must be between ${MIN_POLL_SECONDS} and ${MAX_POLL_SECONDS}.`);
@@ -87,21 +53,11 @@ export async function run() {
         },
     };
 
-    const batchInfo = await executeBatch(
-        apiUrl,
-        apiKey,
-        labels,
-        maxNumberOfAgents || undefined,
-        batchName,
-        multilineInputToObject('globalVariableOverrides', globalVariableOverridesMultiline),
-        multilineInputToObject('variableOverridesPerTest', variableOverridesPerTestMultiline),
-        gatewayName,
-        batchId || undefined,
-    );
-    core.setOutput('batchId', batchInfo.testBatchId);
-    core.info(batchId ? `Started test batch from batchId: ${batchId}` : `Started test batch with labels: ${labels}`);
+    const batchInfo = await triggerBatch(apiUrl, apiKey, batchId, multilineInputToObject('globalVariableOverrides', globalVariableOverridesMultiline));
+    core.setOutput('batchId', batchInfo.executionId);
+    core.info(`Triggered batch ${batchId}, execution ${batchInfo.executionId}`);
 
-    const report = await waitForBatchCompleted(batchInfo.testBatchId, aivaOptions);
+    const report = await waitForBatchCompleted(batchInfo.executionId, aivaOptions);
 
     await writeFile(batchStatusFilepath, report.reportContent, 'utf-8');
 
