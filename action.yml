@@ -1,7 +1,6 @@
-name: AIVA batch test run
-description: Start an AIVA test batch via the v2 batch API — POST
-    /v2/batches/{batchId}/trigger for a defined batch, or POST
-    /v2/batch-executions for an ad-hoc label-based run
+name: AIVA batch trigger
+description: Trigger a batch defined in AIVA via POST /v2/batches/{batchId}/trigger
+    and wait for its results
 author: YSoft AIVA team
 
 branding:
@@ -12,38 +11,12 @@ inputs:
     apiKey:
         description: AIVA API key (store in a repository or organization secret)
         required: true
-    labels:
-        description: Semicolon-separated labels used to select tests for the batch (e.g.
-            "smoke,regression"). Required unless batchId is provided.
-        required: false
-        default: ''
     batchId:
-        description: Run a specific existing batch by its ID instead of selecting tests
-            by labels. Mutually exclusive with labels. When set, only batchName and
-            globalVariableOverrides may be overridden (maxNumberOfAgents,
-            variableOverridesPerTest and gatewayName are rejected).
-        required: false
-        default: ''
-    batchName:
-        description: Custom name of the test batch
-        required: false
-        default: ''
-    maxNumberOfAgents:
-        description: Maximum number of agents the batch can use for test execution.
-            Defaults to 1. Ignored (and rejected) when batchId is provided.
-        required: false
-        default: ''
+        description: ID of the defined batch to trigger.
+        required: true
     globalVariableOverrides:
-        description: Override for all variables in a test Batch. With batchId it is merged
-            over the overrides stored on the batch (a variable named here wins).
-        required: false
-        default: ''
-    variableOverridesPerTest:
-        description: Override for variables in a test specified by test ID.
-        required: false
-        default: ''
-    gatewayName:
-        description: Name of the gateway that is used by aiva-node during test.
+        description: JSON object applied to all tests in the batch. Merged over the overrides
+            stored on the batch (a variable named here wins).
         required: false
         default: ''
     apiUrl:
@@ -70,7 +43,7 @@ inputs:
 
 outputs:
     batchId:
-        description: ID of the started test batch
+        description: ID of the started batch execution
     batchUrl:
         description: URL to the batch in the AIVA UI
     success:

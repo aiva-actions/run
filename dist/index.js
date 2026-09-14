@@ -134678,24 +134678,6 @@ async function waitForBatchCompleted(executionId, options) {
     }
     return { success: isBatchSuccessful(batchStatus), reportContent: batchResult, parsedReport: batchStatus };
 }
-/** @param {string} labelsInput
- * @param dummyPrevious - dummyPrevious argument is here for compatibility with commander option parsing. Without it
- * parseLabels could not be used as a parsing function in commander.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- commander option parser passes previous value
-function parseLabels(labelsInput, dummyPrevious) {
-    if (labelsInput.length == 0) {
-        throw new InvalidOptionArgumentError('Choose at least one label to execute tests.');
-    }
-    const labels = labelsInput
-        .split(';')
-        .map((s) => s.trim())
-        .filter((label) => label.length > 0);
-    if (labels.length === 0) {
-        throw new InvalidOptionArgumentError('At least one non-empty label must be specified.');
-    }
-    return labels;
-}
 /**
  * @param seconds How long to sleep for in seconds.
  */
@@ -134781,53 +134763,36 @@ async function extractErrorDetail(res) {
     return detail;
 }
 /**
- * @param {Request | string | URL} apiUrl
+ * Triggers an execution of a defined batch via POST /v2/batches/{batchId}/trigger.
+ * @param {string} apiUrl
  * @param {string} apiKey
- * @param {string[]} labels
- * @param {string} [maxNumberOfAgents] optional; omitted from the request when undefined so the backend default applies
- * @param {string} batchName
- * @param {object} globalVariableOverrides
- * @param {object} variableOverridesPerTest
- * @param {string} gatewayName
+ * @param {string} batchId id of the defined batch
+ * @param {object} [globalVariableOverrides] merged over the overrides stored on the batch; a variable named here wins
  * @returns object holding the ID of the started batch execution
  */
-async function executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents, batchName, globalVariableOverrides, variableOverridesPerTest, gatewayName, batchId) {
-    console.log('Executing test batch with following parameters');
-    // A batch id triggers an existing batch (overrides only); otherwise an ad-hoc batch is composed from labels.
-    const { url, body } = batchId
-        ? { url: new URL(`/v2/batches/${batchId}/trigger`, apiUrl), body: { globalVariableOverrides } }
-        : {
-            url: new URL('/v2/batch-executions', apiUrl),
-            body: {
-                name: batchName,
-                labels,
-                maxNumberOfAgents: maxNumberOfAgents !== undefined ? Number(maxNumberOfAgents) : undefined,
-                globalVariableOverrides,
-                variableOverridesPerTest,
-                gatewayName,
-            },
-        };
+async function triggerBatch(apiUrl, apiKey, batchId, globalVariableOverrides) {
+    console.log(`Triggering batch ${batchId}`);
     let res;
     try {
-        res = await fetch(url, {
+        res = await fetch(new URL(`/v2/batches/${batchId}/trigger`, apiUrl), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
                 'X-API-Key': apiKey,
             },
-            body: JSON.stringify(body),
+            body: JSON.stringify({ globalVariableOverrides }),
         });
     }
     catch (err) {
-        throw new Error(`Fetch failed during executing of batch, URI ${apiUrl} not reachable : ${err instanceof Error ? err.message : 'unknown'}`, {
+        throw new Error(`Fetch failed during triggering of batch, URI ${apiUrl} not reachable : ${err instanceof Error ? err.message : 'unknown'}`, {
             cause: err,
         });
     }
     if (!res.ok) {
         throw new Error(`AIVA batch request failed (${res.status}): ${await extractErrorDetail(res)}`);
     }
-    console.log(`AIVA batch started`);
+    console.log('AIVA batch execution started');
     return (await res.json());
 }
 /**
@@ -134882,7 +134847,7 @@ function multilineInputToObject(inputName, multilineInput) {
         parsed = JSON.parse(joined);
     }
     catch (e) {
-        throw new Error(`Input '${inputName}' is not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
+        throw new Error(`Input '${inputName}' is not valid JSON: ${e instanceof Error ? e.message : String(e)}`, { cause: e });
     }
     if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
         throw new Error(`Input '${inputName}' must be a JSON object, e.g. {"username": "testuser"}`);
@@ -134894,42 +134859,13 @@ function multilineInputToObject(inputName, multilineInput) {
  */
 async function run() {
     const apiKey = getInput('apiKey', { required: true });
-    const labelsInput = getInput('labels', { required: false });
-    const batchId = getInput('batchId', { required: false });
-    const maxNumberOfAgents = getInput('maxNumberOfAgents', { required: false });
-    const batchName = getInput('batchName', { required: false });
+    const batchId = getInput('batchId', { required: true });
     const globalVariableOverridesMultiline = getMultilineInput('globalVariableOverrides', { required: false });
-    const variableOverridesPerTestMultiline = getMultilineInput('variableOverridesPerTest', { required: false });
-    const gatewayName = getInput('gatewayName', { required: false });
     const apiUrl = getInput('apiUrl', { required: false });
     const pollPeriodSeconds = getInput('pollPeriodSeconds', { required: false });
     const verbose = getInput('verbose', { required: false });
     const batchStatusFilepath = getInput('reportFilePath');
     const artifactName = getInput('artifactName', { required: false }) || 'batch-status';
-    if (!labelsInput && !batchId) {
-        setFailed('Either labels or batchId must be provided.');
-        return;
-    }
-    if (batchId) {
-        const disallowedOverrides = [];
-        if (labelsInput) {
-            disallowedOverrides.push('labels');
-        }
-        if (maxNumberOfAgents) {
-            disallowedOverrides.push('maxNumberOfAgents');
-        }
-        if (variableOverridesPerTestMultiline.join('')) {
-            disallowedOverrides.push('variableOverridesPerTest');
-        }
-        if (gatewayName) {
-            disallowedOverrides.push('gatewayName');
-        }
-        if (disallowedOverrides.length > 0) {
-            setFailed(`When batchId is provided, these inputs cannot be overridden: ${disallowedOverrides.join(', ')}. Only batchName and globalVariableOverrides may be overridden.`);
-            return;
-        }
-    }
-    const labels = labelsInput ? parseLabels(labelsInput) : undefined;
     if (!isInRange(parseInt(pollPeriodSeconds), MIN_POLL_SECONDS, MAX_POLL_SECONDS)) {
         setFailed(`Poll period ${pollPeriodSeconds} is invalid. Value must be between ${MIN_POLL_SECONDS} and ${MAX_POLL_SECONDS}.`);
         return;
@@ -134944,9 +134880,9 @@ async function run() {
             logInfo: (message) => info(message),
         },
     };
-    const batchInfo = await executeBatch(apiUrl, apiKey, labels, maxNumberOfAgents || undefined, batchName, multilineInputToObject('globalVariableOverrides', globalVariableOverridesMultiline), multilineInputToObject('variableOverridesPerTest', variableOverridesPerTestMultiline), gatewayName, batchId || undefined);
+    const batchInfo = await triggerBatch(apiUrl, apiKey, batchId, multilineInputToObject('globalVariableOverrides', globalVariableOverridesMultiline));
     setOutput('batchId', batchInfo.executionId);
-    info(batchId ? `Started test batch from batchId: ${batchId}` : `Started test batch with labels: ${labels}`);
+    info(`Triggered batch ${batchId}, execution ${batchInfo.executionId}`);
     const report = await waitForBatchCompleted(batchInfo.executionId, aivaOptions);
     await writeFile$1(batchStatusFilepath, report.reportContent, 'utf-8');
     const summary = report.parsedReport.results.summary;
